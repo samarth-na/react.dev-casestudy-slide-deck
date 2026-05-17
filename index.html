@@ -1,13 +1,2678 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>slide-deck-reactdotdev</title>
-  </head>
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.jsx"></script>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learning React from react.dev — A Production Codebase Deep Dive</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/theme/night.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/@phosphor-icons/web"></script>
+  <style>
+    :root {
+      --r-main-font: 'Inter', system-ui, -apple-system, sans-serif;
+      --r-heading-font: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --r-code-font: 'JetBrains Mono', 'Fira Code', monospace;
+      --r-heading-text-transform: none;
+      --r-heading-letter-spacing: -0.02em;
+      --r-heading-line-height: 1.15;
+      --r-block-margin: 24px;
+
+      --accent: #58c4dc;
+      --accent-dim: rgba(88, 196, 220, 0.14);
+      --accent-glow: rgba(88, 196, 220, 0.35);
+      --surface: #191919;
+      --surface-sidebar: #202020;
+      --surface-raised: #252525;
+      --surface-highlight: #2c2c2c;
+      --text-primary: #ffffff;
+      --text-secondary: #9b9b9b;
+      --text-tertiary: #777777;
+      --success: #4ade80;
+      --success-dim: rgba(74, 222, 128, 0.12);
+      --warn: #facc15;
+      --warn-dim: rgba(250, 204, 21, 0.12);
+      --danger: #f87171;
+      --danger-dim: rgba(248, 113, 113, 0.12);
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100vw;
+      height: 100vh;
+      background: var(--surface);
+      overflow: hidden;
+    }
+
+    .reveal {
+      color: var(--text-primary);
+      font-weight: 400;
+      line-height: 1.6;
+    }
+
+    /* Title slide */
+    .reveal .slides section:first-child h1 {
+      font-size: 2em;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+      margin-bottom: 0.35em;
+    }
+
+    .reveal .slides section:first-child h3 {
+      font-size: 1em;
+      font-weight: 400;
+      color: var(--text-secondary);
+      margin-bottom: 0.6em;
+    }
+
+    .reveal h1 {
+      color: var(--text-primary);
+      font-size: 2.4em;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+      margin-bottom: 0.3em;
+    }
+
+    .reveal h2 {
+      color: var(--accent);
+      font-size: 1.7em;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      line-height: 1.25;
+      margin-bottom: 0.5em;
+    }
+
+    .reveal h3 {
+      color: var(--text-secondary);
+      font-size: 1.35em;
+      font-weight: 600;
+      margin-bottom: 0.6em;
+    }
+
+    .reveal p {
+      margin-bottom: 0.8em;
+      color: var(--text-secondary);
+    }
+
+    .reveal p strong,
+    .reveal li strong {
+      color: var(--text-primary);
+      font-weight: 600;
+    }
+
+    .reveal ul,
+    .reveal ol {
+      text-align: left;
+      margin-left: 0;
+      padding-left: 1.2em;
+    }
+
+    .reveal li {
+      margin-bottom: 0.55em;
+      color: var(--text-secondary);
+    }
+
+    .reveal ul li::marker {
+      color: var(--accent);
+      font-size: 0.85em;
+    }
+
+    .reveal ol li::marker {
+      color: var(--text-tertiary);
+      font-weight: 700;
+    }
+
+    /* Code blocks */
+    .reveal pre {
+      font-size: 0.48em;
+      line-height: 1.6;
+      box-shadow: none;
+      background: var(--surface-raised);
+      border: 1px solid var(--surface-highlight);
+      border-radius: 14px;
+      padding: 1.4em 1.6em;
+      margin: 1.2em auto;
+      max-width: 95%;
+    }
+
+    .reveal pre code {
+      font-family: var(--r-code-font);
+      font-weight: 400;
+      max-height: 520px;
+      background: transparent;
+      padding: 0;
+      tab-size: 2;
+    }
+
+    .reveal code {
+      font-family: var(--r-code-font);
+      font-weight: 500;
+      font-size: 0.88em;
+      background: var(--surface-raised);
+      padding: 0.15em 0.45em;
+      border-radius: 6px;
+      color: var(--accent);
+    }
+
+    .reveal pre code {
+      color: inherit;
+    }
+
+    /* Tables */
+    .reveal table {
+      font-size: 0.62em;
+      margin: 1.2em auto;
+      border-collapse: separate;
+      border-spacing: 0;
+      width: 92%;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid var(--surface-highlight);
+    }
+
+    .reveal table th {
+      background: var(--surface-raised);
+      color: var(--accent);
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-size: 0.8em;
+      padding: 0.9em 1.1em;
+      border-bottom: 1px solid var(--surface-highlight);
+      text-align: left;
+    }
+
+    .reveal table td {
+      padding: 0.75em 1.1em;
+      border-bottom: 1px solid rgba(38, 50, 74, 0.6);
+      color: var(--text-secondary);
+    }
+
+    .reveal table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .reveal table tr:hover td {
+      background: rgba(88, 196, 220, 0.04);
+      transition: background 0.2s ease;
+    }
+
+    /* Utilities */
+    .reveal .small {
+      font-size: 0.72em;
+      line-height: 1.5;
+      color: var(--text-tertiary);
+    }
+
+    .reveal .tag {
+      display: inline-block;
+      background: var(--accent-dim);
+      color: var(--accent);
+      padding: 4px 14px;
+      border-radius: 999px;
+      font-size: 0.58em;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      margin: 3px;
+      border: 1px solid var(--accent-glow);
+      backdrop-filter: blur(6px);
+      transition: transform 0.15s ease, box-shadow 0.15s ease;
+    }
+
+    .reveal .tag:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 14px rgba(88, 196, 220, 0.2);
+    }
+
+    .reveal .good { color: var(--success); font-weight: 600; }
+    .reveal .bad { color: var(--danger); font-weight: 600; }
+    .reveal .warn { color: var(--warn); font-weight: 600; }
+
+    /* Layout helpers */
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2.5rem;
+      align-items: start;
+      text-align: left;
+    }
+
+    .two-col > div {
+      min-width: 0;
+    }
+
+    /* Blockquotes / insights */
+    .reveal blockquote {
+      background: var(--surface-raised);
+      border: 1px solid var(--surface-highlight);
+      border-radius: 14px;
+      padding: 1em 1.3em;
+      margin: 1em 0;
+      text-align: left;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
+    }
+
+    .reveal blockquote p {
+      margin: 0;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .reveal blockquote.insight {
+      border-top: 3px solid var(--accent);
+      background: linear-gradient(180deg, rgba(88, 196, 220, 0.06) 0%, var(--surface-raised) 100%);
+    }
+
+    /* Slide chrome */
+    .slide-number {
+      font-family: var(--r-code-font);
+      font-size: 0.55em;
+      color: var(--text-tertiary);
+      background: transparent;
+      padding: 8px 14px;
+      border-radius: 10px;
+    }
+
+    .reveal .progress {
+      background: var(--surface);
+      height: 3px;
+    }
+
+    .reveal .progress span {
+      background: var(--accent);
+      border-radius: 0 2px 2px 0;
+    }
+
+    /* ── Navigation Controls ──────────────────────── */
+    .reveal .controls {
+      color: var(--accent);
+    }
+
+    .reveal .controls button {
+      width: 42px;
+      height: 42px;
+      background: var(--surface-raised);
+      border: 1px solid var(--surface-highlight);
+      border-radius: 10px;
+      backdrop-filter: blur(8px);
+      transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+      opacity: 0.45;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .reveal .controls button:hover {
+      opacity: 1;
+      background: var(--surface-highlight);
+      border-color: var(--accent);
+      transform: scale(1.12);
+      box-shadow: 0 0 24px var(--accent-glow), 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    .reveal .controls button:active {
+      transform: scale(0.95);
+    }
+
+    .reveal .controls .controls-arrow {
+      position: relative;
+      width: 12px;
+      height: 12px;
+      border: none;
+      background: transparent;
+    }
+
+    .reveal .controls .controls-arrow::before {
+      content: '';
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-right: 2.5px solid var(--accent);
+      border-bottom: 2.5px solid var(--accent);
+      transition: border-color 0.2s ease;
+    }
+
+    .reveal .controls .navigate-left .controls-arrow::before {
+      transform: rotate(135deg);
+      left: 2px;
+    }
+
+    .reveal .controls .navigate-right .controls-arrow::before {
+      transform: rotate(-45deg);
+      right: 2px;
+    }
+
+    .reveal .controls .navigate-up .controls-arrow::before {
+      transform: rotate(-135deg);
+      top: 2px;
+    }
+
+    .reveal .controls .navigate-down .controls-arrow::before {
+      transform: rotate(45deg);
+      bottom: 2px;
+    }
+
+    /* Fragment animations */
+    .reveal .fragment {
+      opacity: 0;
+      transform: translateY(14px);
+      transition: all 0.55s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .reveal .fragment.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Keyboard styling */
+    .reveal kbd {
+      font-family: var(--r-code-font);
+      background: var(--surface-raised);
+      border: 1px solid var(--surface-highlight);
+      border-radius: 6px;
+      padding: 0.15em 0.5em;
+      font-size: 0.85em;
+      color: var(--text-primary);
+      box-shadow: 0 2px 0 var(--surface-highlight);
+    }
+
+    /* Links */
+    .reveal a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid transparent;
+      transition: border-color 0.2s ease;
+    }
+
+    .reveal a:hover {
+      border-bottom-color: var(--accent);
+    }
+
+    /* Images */
+    .reveal img {
+      border-radius: 10px;
+    }
+
+    /* Emoji bullets */
+    .emoji-bullet {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    .emoji-bullet li {
+      padding-left: 1.6em;
+      position: relative;
+    }
+
+    .emoji-bullet li::before {
+      position: absolute;
+      left: 0;
+      margin-right: 0;
+    }
+
+    /* Print-friendly */
+    @media print {
+      .reveal .progress,
+      .reveal .controls,
+      .reveal .slide-number {
+        display: none !important;
+      }
+      .reveal pre {
+        border: 1px solid #334155;
+      }
+    }
+
+    /* ── Reveal.js Fixes ───────────────────────────── */
+    .reveal .slides {
+      border: none !important;
+      box-shadow: none !important;
+      background: transparent !important;
+    }
+
+    .reveal .slides > section {
+      border: none !important;
+      box-shadow: none !important;
+    }
+
+    /* ── Layout Shell ──────────────────────────────── */
+    .reveal-wrap {
+      width: 100vw;
+      height: 100vh;
+      transition: width 0.45s cubic-bezier(0.25, 1, 0.5, 1),
+                  margin-left 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+      overflow: hidden;
+      background: var(--surface);
+    }
+
+    body.sidebar-open .reveal-wrap {
+      margin-left: 260px;
+      width: calc(100vw - 260px);
+    }
+
+    .reveal {
+      height: 100% !important;
+    }
+
+    /* ── Side Navigation (Notion Style) ────────────── */
+    .nav-toggle {
+      position: fixed;
+      top: 16px;
+      left: 16px;
+      z-index: 1000;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: background 0.2s ease, left 0.45s cubic-bezier(0.25,1,0.5,1);
+      color: var(--text-tertiary);
+    }
+
+    body.sidebar-open .nav-toggle {
+      left: 276px;
+    }
+
+    .nav-toggle:hover {
+      background: var(--surface-highlight);
+    }
+
+    .nav-toggle span {
+      display: block;
+      width: 16px;
+      height: 1.5px;
+      background: currentColor;
+      border-radius: 1px;
+      transition: all 0.25s ease;
+    }
+
+    .nav-toggle.active span:nth-child(1) {
+      transform: translateY(5.5px) rotate(45deg);
+    }
+
+    .nav-toggle.active span:nth-child(2) {
+      opacity: 0;
+    }
+
+    .nav-toggle.active span:nth-child(3) {
+      transform: translateY(-5.5px) rotate(-45deg);
+    }
+
+    .nav-drawer {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 260px;
+      height: 100vh;
+      background: var(--surface-sidebar);
+      z-index: 999;
+      transform: translateX(-100%);
+      transition: transform 0.45s cubic-bezier(0.25, 1, 0.5, 1);
+      display: flex;
+      flex-direction: column;
+      padding: 48px 0 16px;
+      overflow-y: auto;
+      font-family: var(--r-main-font);
+      border-right: none;
+    }
+
+    .nav-drawer.open {
+      transform: translateX(0);
+    }
+
+    /* Accordion folds */
+    .nav-drawer details {
+      margin: 0;
+    }
+
+    .nav-drawer details:last-of-type {
+      border-bottom: none;
+    }
+
+    .nav-drawer summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 6px 16px;
+      font-family: var(--r-main-font);
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: background 0.15s ease, color 0.15s ease;
+      user-select: none;
+      border-radius: 4px;
+      margin: 0 8px;
+    }
+
+    .nav-drawer summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .nav-drawer summary::after {
+      content: "";
+      display: inline-block;
+      width: 6px;
+      height: 6px;
+      border-right: 1.5px solid var(--text-tertiary);
+      border-bottom: 1.5px solid var(--text-tertiary);
+      transform: rotate(-45deg);
+      transition: transform 0.2s ease;
+      margin-right: 4px;
+    }
+
+    .nav-drawer details[open] > summary::after {
+      transform: rotate(45deg);
+    }
+
+    .nav-drawer summary:hover {
+      background: var(--surface-raised);
+      color: var(--text-primary);
+    }
+
+    .nav-drawer details ul {
+      list-style: none;
+      margin: 2px 0 4px;
+      padding: 0;
+    }
+
+    .nav-drawer details li a {
+      display: block;
+      padding: 5px 16px 5px 28px;
+      color: var(--text-tertiary);
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 400;
+      font-family: var(--r-main-font);
+      transition: background 0.15s ease, color 0.15s ease;
+      cursor: pointer;
+      line-height: 1.4;
+      border-radius: 4px;
+      margin: 0 8px;
+      border-left: none;
+    }
+
+    .nav-drawer details li a:hover {
+      color: var(--text-primary);
+      background: var(--surface-raised);
+    }
+
+    .nav-drawer details li a.active {
+      color: var(--text-primary);
+      background: var(--surface-raised);
+      font-weight: 500;
+      border-left: none;
+    }
+
+    .nav-shortcut {
+      margin-top: auto;
+      padding: 12px 16px;
+      font-size: 0.65rem;
+      color: var(--text-tertiary);
+      font-family: var(--r-main-font);
+      border-top: none;
+    }
+
+    .nav-shortcut kbd {
+      font-family: var(--r-code-font);
+      background: var(--surface-raised);
+      border: 1px solid var(--surface-highlight);
+      border-radius: 4px;
+      padding: 1px 4px;
+      font-size: 0.7em;
+    }
+
+    /* ── Theme Toggle ──────────────────────────────── */
+    .theme-toggle {
+      position: fixed;
+      top: 16px;
+      right: 16px;
+      z-index: 1000;
+      width: 32px;
+      height: 32px;
+      border-radius: 6px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: background 0.2s ease;
+      color: var(--text-tertiary);
+    }
+
+    .theme-toggle:hover {
+      background: var(--surface-highlight);
+    }
+
+    /* ── Light Mode Overrides ──────────────────────── */
+    [data-theme="light"] {
+      --surface: #ffffff;
+      --surface-sidebar: #f7f7f5;
+      --surface-raised: #f0f0f0;
+      --surface-highlight: #e6e6e6;
+      --text-primary: #111111;
+      --text-secondary: #505050;
+      --text-tertiary: #9b9a97;
+      --accent: #0ea5e9;
+      --accent-dim: rgba(14, 165, 233, 0.10);
+      --accent-glow: rgba(14, 165, 233, 0.25);
+    }
+
+    [data-theme="light"] body,
+    [data-theme="light"] .reveal {
+      background: var(--surface);
+    }
+
+    [data-theme="light"] .reveal {
+      color: var(--text-primary);
+    }
+
+    [data-theme="light"] .reveal h1 {
+      color: var(--text-primary);
+    }
+
+    [data-theme="light"] .reveal h2 {
+      color: #0284c7;
+    }
+
+    [data-theme="light"] .reveal h3 {
+      color: var(--text-secondary);
+    }
+
+    [data-theme="light"] .reveal p {
+      color: var(--text-secondary);
+    }
+
+    [data-theme="light"] .reveal li {
+      color: var(--text-secondary);
+    }
+
+    [data-theme="light"] .reveal table {
+      border-color: var(--surface-highlight);
+    }
+
+    [data-theme="light"] .reveal table th {
+      background: var(--surface-raised);
+      color: var(--accent);
+      border-bottom-color: var(--surface-highlight);
+    }
+
+    [data-theme="light"] .reveal table td {
+      border-bottom-color: rgba(226, 232, 240, 0.8);
+    }
+
+    [data-theme="light"] .reveal blockquote {
+      background: var(--surface-raised);
+      border-color: var(--surface-highlight);
+    }
+
+    [data-theme="light"] .reveal blockquote.insight {
+      border-top-color: var(--accent);
+      background: linear-gradient(180deg, rgba(14, 165, 233, 0.05) 0%, var(--surface-raised) 100%);
+    }
+
+    [data-theme="light"] .reveal pre {
+      background: #1e1e2e;
+      border-color: #313244;
+    }
+
+    [data-theme="light"] .reveal code {
+      background: var(--surface-raised);
+    }
+
+    [data-theme="light"] .reveal kbd {
+      background: var(--surface);
+      border-color: var(--surface-highlight);
+      color: var(--text-primary);
+    }
+
+    [data-theme="light"] .theme-toggle {
+      box-shadow: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Controls -->
+<button class="nav-toggle" id="navToggle" aria-label="Toggle navigation">
+  <span></span><span></span><span></span>
+</button>
+<button class="theme-toggle" id="themeToggle" aria-label="Toggle theme"><i class="ph ph-moon"></i></button>
+
+<!-- Side Navigation -->
+<nav class="nav-drawer" id="navDrawer">
+  <details>
+    <summary>Title</summary>
+    <ul><li><a data-slide="0">Cover</a></li></ul>
+  </details>
+  <details>
+    <summary>Agenda</summary>
+    <ul><li><a data-slide="1">What We'll Cover</a></li></ul>
+  </details>
+  <details>
+    <summary>Project Architecture</summary>
+    <ul>
+      <li><a data-slide="2">Overview</a></li>
+      <li><a data-slide="3">Tech Stack</a></li>
+      <li><a data-slide="4">Directory Structure</a></li>
+      <li><a data-slide="5">Content Pipeline</a></li>
+      <li><a data-slide="6">Catch-All Route</a></li>
+    </ul>
+  </details>
+  <details>
+    <summary>Component Patterns</summary>
+    <ul>
+      <li><a data-slide="7">TS Props</a></li>
+      <li><a data-slide="8">Variant Map</a></li>
+      <li><a data-slide="9">Icon Components</a></li>
+      <li><a data-slide="10">Layout Shell</a></li>
+      <li><a data-slide="11">forwardRefWithAs</a></li>
+      <li><a data-slide="12">Named Exports</a></li>
+    </ul>
+  </details>
+  <details>
+    <summary>Custom Hooks</summary>
+    <ul>
+      <li><a data-slide="14">usePendingRoute</a></li>
+      <li><a data-slide="15">Why It's Great</a></li>
+      <li><a data-slide="16">useTocHighlight</a></li>
+      <li><a data-slide="17">useActiveSection</a></li>
+      <li><a data-slide="18">Design Rules</a></li>
+    </ul>
+  </details>
+  <details>
+    <summary>React Context</summary>
+    <ul>
+      <li><a data-slide="20">Usage Table</a></li>
+      <li><a data-slide="21">Basic Passing</a></li>
+      <li><a data-slide="22">Sentinel Pattern</a></li>
+      <li><a data-slide="23">Boolean Flag</a></li>
+    </ul>
+  </details>
+  <details>
+    <summary>MDX + React</summary>
+    <ul>
+      <li><a data-slide="25">What is MDX?</a></li>
+      <li><a data-slide="26">Compilation Pipeline</a></li>
+      <li><a data-slide="27">MDXComponents Map</a></li>
+      <li><a data-slide="28">Serialization</a></li>
+      <li><a data-slide="29">Heading Anchors</a></li>
+    </ul>
+  </details>
+  <details>
+    <summary>Performance</summary>
+    <ul>
+      <li><a data-slide="31">React.lazy</a></li>
+      <li><a data-slide="32">React.memo</a></li>
+      <li><a data-slide="33">startTransition</a></li>
+      <li><a data-slide="34">useMemo</a></li>
+      <li><a data-slide="35">Suspense</a></li>
+      <li><a data-slide="36">IntersectionObserver</a></li>
+      <li><a data-slide="37">Scroll Lock</a></li>
+      <li><a data-slide="38">react-collapsed</a></li>
+    </ul>
+  </details>
+  <details>
+    <summary>TypeScript Patterns</summary>
+    <ul>
+      <li><a data-slide="40">Discriminated Unions</a></li>
+      <li><a data-slide="41">Generic Polymorphism</a></li>
+      <li><a data-slide="42">Symbol Sentinel</a></li>
+      <li><a data-slide="43">Recursive Types</a></li>
+      <li><a data-slide="44">classnames</a></li>
+    </ul>
+  </details>
+  <details>
+    <summary>State Management</summary>
+    <ul>
+      <li><a data-slide="46">Built-ins Only</a></li>
+      <li><a data-slide="47">Lifting State</a></li>
+      <li><a data-slide="48">URL as State</a></li>
+    </ul>
+  </details>
+  <details>
+    <summary>Recursive Components</summary>
+    <ul>
+      <li><a data-slide="50">SidebarRouteTree</a></li>
+      <li><a data-slide="51">InlineTocItem</a></li>
+      <li><a data-slide="52">getBreadcrumbs</a></li>
+    </ul>
+  </details>
+  <details>
+    <summary>Sandpack</summary>
+    <ul>
+      <li><a data-slide="53">SandpackRoot</a></li>
+      <li><a data-slide="54">Key Patterns</a></li>
+    </ul>
+  </details>
+  <details>
+    <summary>Next.js Patterns</summary>
+    <ul>
+      <li><a data-slide="56">_app.tsx</a></li>
+      <li><a data-slide="57">Router Events</a></li>
+      <li><a data-slide="58">getStaticPaths</a></li>
+      <li><a data-slide="59">next.config.js</a></li>
+    </ul>
+  </details>
+  <details>
+    <summary>React 19</summary>
+    <ul>
+      <li><a data-slide="61">Features</a></li>
+      <li><a data-slide="62">React Compiler</a></li>
+    </ul>
+  </details>
+  <details>
+    <summary>Anti-Patterns</summary>
+    <ul>
+      <li><a data-slide="64">Build-Time eval</a></li>
+      <li><a data-slide="65">Serialization</a></li>
+      <li><a data-slide="66">Known Hacks</a></li>
+      <li><a data-slide="67">What NOT to Do</a></li>
+    </ul>
+  </details>
+  <details>
+    <summary>Best Practices</summary>
+    <ul>
+      <li><a data-slide="68">Component Design</a></li>
+      <li><a data-slide="69">State & Data</a></li>
+      <li><a data-slide="70">Performance</a></li>
+      <li><a data-slide="71">TypeScript</a></li>
+      <li><a data-slide="72">Real-World Wisdom</a></li>
+    </ul>
+  </details>
+  <details>
+    <summary>Cheatsheet</summary>
+    <ul>
+      <li><a data-slide="73">Component Template</a></li>
+      <li><a data-slide="74">Hook Template</a></li>
+      <li><a data-slide="75">Context Template</a></li>
+    </ul>
+  </details>
+  <details>
+    <summary>Closing</summary>
+    <ul><li><a data-slide="77">What's Next?</a></li></ul>
+  </details>
+  <div class="nav-shortcut">
+    Press <kbd>N</kbd> to toggle nav &middot; <kbd>Esc</kbd> for overview
+  </div>
+</nav>
+
+<div class="reveal-wrap" id="revealWrap">
+<div class="reveal">
+<div class="slides">
+
+<!-- ==================== TITLE ==================== -->
+<section>
+  <h1><i class="ph ph-anchor"></i> Learning React from<br><code>react.dev</code></h1>
+  <h3>A Production Codebase Deep Dive</h3>
+  <p class="small" style="color:#94a3b8;">
+    Stack: Next.js 15 · React 19 · TypeScript · Tailwind CSS · MDX<br>
+    <span class="tag">Pages Router</span>
+    <span class="tag">React Compiler</span>
+    <span class="tag">Sandpack</span>
+  </p>
+</section>
+
+<!-- ==================== AGENDA ==================== -->
+<section>
+  <h2><i class="ph ph-list-dashes"></i> What We'll Cover</h2>
+  <p class="small">This deck extracts patterns from the actual react.dev source code. Every example is production-tested, serving millions of developers every month.</p>
+  <ol>
+    <li class="fragment">Project Architecture — How a real docs site is built</li>
+    <li class="fragment">Component Patterns — The "how" of React</li>
+    <li class="fragment">Custom Hooks — Reusable logic you can steal</li>
+    <li class="fragment">React Context — Multi-level data flow</li>
+    <li class="fragment">MDX + React — Content as components</li>
+    <li class="fragment">Performance — Lazy loading, memo, transitions</li>
+    <li class="fragment">TypeScript Patterns — Real-world generics</li>
+    <li class="fragment">Anti-Patterns — What NOT to do</li>
+    <li class="fragment">React 19 Features — Compiler, RSC, transitions</li>
+  </ol>
+</section>
+
+<!-- ==================== OVERVIEW ==================== -->
+<section>
+  <section>
+    <h2><i class="ph ph-buildings"></i> Project Architecture</h2>
+    <p>How react.dev is organized</p>
+  </section>
+
+  <section>
+    <h3>Tech Stack</h3>
+    <p class="small">The site runs on a carefully chosen stack that balances performance, maintainability, and author experience. No bloat, no novelty for novelty's sake.</p>
+    <table style="font-size:0.7em; margin:auto;">
+      <tr><td style="color:#58c4dc">Framework</td><td>Next.js 15.1.11 (Pages Router)</td></tr>
+      <tr><td style="color:#58c4dc">React</td><td>React 19 + React Compiler</td></tr>
+      <tr><td style="color:#58c4dc">Language</td><td>TypeScript 5.7</td></tr>
+      <tr><td style="color:#58c4dc">Styling</td><td>Tailwind CSS 3 + classnames</td></tr>
+      <tr><td style="color:#58c4dc">Content</td><td>MDX (Markdown + JSX)</td></tr>
+      <tr><td style="color:#58c4dc">Search</td><td>Algolia DocSearch</td></tr>
+      <tr><td style="color:#58c4dc">Playground</td><td>CodeSandbox Sandpack</td></tr>
+      <tr><td style="color:#58c4dc">UI Primitives</td><td>Headless UI + Radix UI</td></tr>
+    </table>
+  </section>
+
+  <section>
+    <h3>Directory Structure</h3>
+    <p class="small">Despite serving hundreds of pages, the codebase stays surprisingly flat. The catch-all route and MDX pipeline mean most content lives in plain markdown files, not pages.</p>
+    <pre><code class="language-text">src/
+├── pages/              # Next.js Pages Router
+│   ├── _app.tsx        # Root app component (providers, analytics)
+│   ├── _document.tsx   # HTML shell
+│   └── [[...markdownPath]].js   # 🎯 Catch-all route for ALL docs!
+├── components/
+│   ├── Layout/         # Page shell, sidebar, topnav, footer, TOC
+│   ├── MDX/            # 50+ custom MDX components
+│   └── Icon/           # SVG icon components (30+ icons)
+├── hooks/              # Custom React hooks
+│   └── usePendingRoute.ts
+├── utils/              # Build-time & runtime utilities
+├── content/            # All documentation as .md files
+└── styles/             # Global CSS, Tailwind</code></pre>
+  </section>
+
+  <section>
+    <h3>How Content Becomes a Page</h3>
+    <p class="small">React.dev does not render MDX on the client. It compiles everything at build time, serializes the React tree to JSON, and revives it in the browser. This is a custom SSG pipeline that predates React Server Components.</p>
+    <div class="two-col">
+      <div>
+        <p style="color:#58c4dc"><strong>Build Time</strong></p>
+        <ol style="font-size:0.65em">
+          <li>Scan <code>src/content/</code> for all <code>.md</code> files</li>
+          <li><code>getStaticPaths()</code> generates all URL paths</li>
+          <li><code>getStaticProps()</code> reads each MDX file</li>
+          <li>Compile MDX → JSX at build time</li>
+          <li>Serialize React tree to JSON</li>
+          <li>Cache in <code>node_modules/.cache/</code></li>
+        </ol>
+      </div>
+      <div>
+        <p style="color:#58c4dc"><strong>Client Side</strong></p>
+        <ol style="font-size:0.65em">
+          <li>JSON props arrive at browser</li>
+          <li><code>reviveNodeOnClient()</code> deserializes</li>
+          <li>String names → real React components</li>
+          <li>Page component wraps everything</li>
+          <li>Sidebar + TOC + content all render</li>
+        </ol>
+      </div>
+    </div>
+    <blockquote class="insight" style="font-size:0.65em">
+      💡 <strong>Key insight:</strong> They compile MDX on the server, serialize the React tree to JSON, then revive it on the client. This is <em>not</em> React Server Components — it's a custom SSG pipeline!
+    </blockquote>
+  </section>
+
+  <section>
+    <h3>The Catch-All Route Explained</h3>
+    <p class="small">One Next.js page file powers every single documentation URL. It maps URL segments to file paths on disk, then compiles the matching MDX into a serializable React tree.</p>
+    <pre><code class="language-js">// src/pages/[[...markdownPath]].js
+
+// This ONE file handles every documentation page:
+//   /                → markdownPath = undefined      → index.md
+//   /learn            → markdownPath = ['learn']      → learn/index.md
+//   /reference/react  → markdownPath = ['reference','react'] → reference/react.md
+
+export async function getStaticPaths() {
+  // Recursively find ALL .md files in src/content/
+  // Converts 'learn/thinking-in-react.md' → { params: { markdownPath: ['learn','thinking-in-react'] } }
+}
+
+export async function getStaticProps(context) {
+  const path = (context.params.markdownPath || []).join('/') || 'index';
+  const mdx = fs.readFileSync(rootDir + path + '.md', 'utf8');
+  const { toc, content, meta } = await compileMDX(mdx, path, {});
+  return { props: { toc, content, meta } }; // JSON-serialized React tree!
+}</code></pre>
+  </section>
+</section>
+
+<!-- ==================== COMPONENT PATTERNS ==================== -->
+<section>
+  <section>
+    <h2><i class="ph ph-puzzle-piece"></i> Component Patterns</h2>
+    <p>How real React components are structured</p>
+  </section>
+
+  <section>
+    <h3>Pattern 1: Functional Components with TypeScript Props</h3>
+    <p class="small">The codebase never uses <code>React.FC</code>. Instead, every component is a plain function with a named interface. This keeps types close to the code and avoids the implicit <code>children</code> prop that <code>FC</code> injects.</p>
+    <pre><code class="language-tsx">// <i class="ph ph-check-circle"></i> THE STANDARD: Interface for props, destructure in signature
+interface PageProps {
+  children: React.ReactNode;
+  toc: Array&lt;TocItem&gt;;
+  routeTree: RouteItem;
+  meta: { title?: string; description?: string };
+  section: 'learn' | 'reference' | 'community' | 'blog' | 'home' | 'unknown';
+}
+
+export function Page({ children, toc, routeTree, meta, section }: PageProps) {
+  // ... component logic
+  return (/* JSX */);
+}</code></pre>
+    <ul style="font-size:0.65em">
+      <li class="fragment"><span class="good">✓</span> Always define props as a named <code>interface</code></li>
+      <li class="fragment"><span class="good">✓</span> Use <strong>string literal unions</strong> for constrained values</li>
+      <li class="fragment"><span class="good">✓</span> Mark optional props with <code>?</code></li>
+      <li class="fragment"><span class="bad">✗</span> Never use <code>React.FC</code> (it's not used anywhere in this codebase!)</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Pattern 2: The "Variant Map" Pattern</h3>
+    <p class="small">When a component supports multiple visual variants, a lookup object is cleaner than a chain of ternaries. It also makes TypeScript exhaustiveness checking trivial.</p>
+    <p>Instead of if/else chains, use <strong>lookup objects</strong></p>
+    <pre><code class="language-tsx">// <i class="ph ph-check-circle"></i> CLEAN: Configuration as data, not imperative logic
+const variantMap = {
+  deprecated: {
+    title: 'Deprecated',
+    Icon: IconWarning,
+    containerClasses: 'bg-red-5 dark:bg-red-60',
+    textColor: 'text-red-50 dark:text-red-40',
+  },
+  note: {
+    title: 'Note',
+    Icon: IconNote,
+    containerClasses: 'bg-green-5 dark:bg-green-60',
+    textColor: 'text-green-60 dark:text-green-40',
+  },
+  pitfall: { /* ... */ },
+  canary:  { /* ... */ },
+  wip:     { /* ... */ },
+};
+
+function ExpandableCallout({ children, type = 'note' }) {
+  const variant = variantMap[type];
+  return (
+    &lt;div className={variant.containerClasses}&gt;
+      &lt;h3 className={variant.textColor}&gt;
+        &lt;variant.Icon /&gt; {variant.title}
+      &lt;/h3&gt;
+      {children}
+    &lt;/div&gt;
+  );
+}</code></pre>
+    <p class="small"><span class="good">✓</span> Easy to add new variants without touching the component logic</p>
+  </section>
+
+  <section>
+    <h3>Pattern 3: Self-Contained Icon Components</h3>
+    <p class="small">Rather than importing a massive icon library, each SVG is a standalone component. This guarantees tree-shaking, lets icons inherit color via <code>currentColor</code>, and keeps sizing proportional to text.</p>
+    <pre><code class="language-tsx">// src/components/Icon/IconNote.tsx
+// Each icon is its OWN component — no giant icon library bundle!
+export function IconNote({ className }: { className?: string }) {
+  return (
+    &lt;svg
+      width="1em" height="1em" viewBox="0 0 16 16"
+      className={className} fill="currentColor"&gt;
+      &lt;path d="M8 1.5a6.5 6.5 ..." /&gt;
+    &lt;/svg&gt;
+  );
+}</code></pre>
+    <ul style="font-size:0.65em">
+      <li class="fragment"><span class="good">✓</span> <strong>Tree-shakeable:</strong> only imported icons end up in the bundle</li>
+      <li class="fragment"><span class="good">✓</span> Uses <code>currentColor</code> for easy theming</li>
+      <li class="fragment"><span class="good">✓</span> <code>1em</code> sizing makes icons respect parent font size</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Pattern 4: Component Composition via Layout Shell</h3>
+    <p class="small">The <code>Page</code> component does not accept dozens of boolean flags. It composes layout pieces via children and wraps only the content area in Context providers, keeping the render tree lean.</p>
+    <pre><code class="language-tsx">// Page.tsx — The layout orchestrator
+export function Page({ children, toc, routeTree, section }) {
+  return (
+    &lt;&gt;
+      &lt;Seo title={title} /&gt;
+      &lt;TopNav section={section} /&gt;
+
+      &lt;div className="grid grid-cols-sidebar-content-toc"&gt;
+        {/* Left: Sidebar */}
+        &lt;SidebarNav routeTree={routeTree} /&gt;
+
+        {/* Center: Content with Context Providers wrapping children */}
+        &lt;Suspense fallback={null}&gt;
+          &lt;main&gt;
+            &lt;TocContext value={toc}&gt;
+              &lt;LanguagesContext value={languages}&gt;
+                {children}  {/* &lt;— MDX content goes here */}
+              &lt;/LanguagesContext&gt;
+            &lt;/TocContext&gt;
+          &lt;/main&gt;
+        &lt;/Suspense&gt;
+
+        {/* Right: Table of Contents */}
+        &lt;Toc headings={toc} /&gt;
+      &lt;/div&gt;
+
+      &lt;Footer /&gt;
+    &lt;/&gt;
+  );
+}</code></pre>
+    <p class="small"><span class="good">✓</span> Context providers wrap <em>only</em> the content area, not the entire app</p>
+  </section>
+
+  <section>
+    <h3>Pattern 5: The <code>forwardRefWithAs</code> Polymorphic Pattern</h3>
+    <pre><code class="language-tsx">// Allows a component to render as ANY HTML element
+export function forwardRefWithAs&lt;Props, ComponentType extends As&gt;(
+  comp: (props, ref) =&gt; React.ReactElement | null
+) {
+  return React.forwardRef(comp as any);
+}
+
+// Usage: Heading can render as h1, h2, h3, or any element!
+const Heading = forwardRefWithAs&lt;HeadingProps, 'div'&gt;(
+  function Heading({ as: Comp = 'div', children, id, ...props }, ref) {
+    return (
+      &lt;Comp id={id} ref={ref} {...props}&gt;
+        {children}
+        &lt;a href={`#${id}`} className="mdx-header-anchor"&gt;#&lt;/a&gt;
+      &lt;/Comp&gt;
+    );
+  }
+);
+// H1 = &lt;Heading as="h1" /&gt;  → renders &lt;h1&gt;</code></pre>
+    <p class="small"><span class="good">✓</span> Advanced TypeScript pattern — lets one component render as multiple HTML elements</p>
+  </section>
+
+  <section>
+    <h3>Pattern 6: Named Exports over Default Exports</h3>
+    <pre><code class="language-tsx">// <i class="ph ph-check-circle"></i> Preferred in this codebase:
+export function Button({ children, onClick, active }: ButtonProps) { ... }
+export function DocsPageFooter({ nextRoute, prevRoute }: Props) { ... }
+
+// <i class="ph ph-check-circle"></i> Barrel exports via index files:
+// components/Layout/Sidebar/index.tsx
+export { SidebarButton } from './SidebarButton';
+export { SidebarLink } from './SidebarLink';
+export { SidebarRouteTree } from './SidebarRouteTree';</code></pre>
+    <ul style="font-size:0.65em">
+      <li class="fragment"><span class="good">✓</span> Named exports enable better tree-shaking</li>
+      <li class="fragment"><span class="good">✓</span> IDE auto-import works perfectly</li>
+      <li class="fragment"><span class="good">✓</span> Barrel index files create clean public APIs</li>
+    </ul>
+  </section>
+</section>
+
+<!-- ==================== CUSTOM HOOKS ==================== -->
+<section>
+  <section>
+    <h2><i class="ph ph-anchor"></i> Custom Hooks</h2>
+    <p>Extracting reusable stateful logic</p>
+  </section>
+
+  <section>
+    <h3>Hook 1: <code>usePendingRoute</code></h3>
+    <p class="small">Navigating between pages in a docs site should feel instant. This hook debounces route changes so a loading indicator only appears when navigation actually takes longer than 100ms, eliminating flicker on fast transitions.</p>
+    <p>Detects slow page navigations for loading states</p>
+    <pre><code class="language-tsx">const usePendingRoute = () => {
+  const { events } = useRouter();
+  const [pendingRoute, setPendingRoute] = useState&lt;string | null&gt;(null);
+  const currentRoute = useRef&lt;string | null&gt;(null);
+
+  useEffect(() => {
+    let routeTransitionTimer: any = null;
+
+    const handleRouteChangeStart = (url: string) => {
+      clearTimeout(routeTransitionTimer);
+      // 🎯 KEY: Only show pending after 100ms delay (debounce!)
+      routeTransitionTimer = setTimeout(() => {
+        if (currentRoute.current !== url) {
+          currentRoute.current = url;
+          setPendingRoute(url);
+        }
+      }, 100);
+    };
+
+    const handleRouteChangeComplete = () => {
+      setPendingRoute(null);
+      clearTimeout(routeTransitionTimer);
+    };
+
+    events.on('routeChangeStart', handleRouteChangeStart);
+    events.on('routeChangeComplete', handleRouteChangeComplete);
+
+    return () => {  // 🔑 Cleanup!
+      events.off('routeChangeStart', handleRouteChangeStart);
+      events.off('routeChangeComplete', handleRouteChangeComplete);
+      clearTimeout(routeTransitionTimer);
+    };
+  }, [events]);
+
+  return pendingRoute;
+};</code></pre>
+  </section>
+
+  <section>
+    <h3>What Makes <code>usePendingRoute</code> Great</h3>
+    <p class="small">Great hooks do one thing well and clean up after themselves. This one demonstrates the full lifecycle: subscribe, throttle, track mutable state with refs, and unsubscribe on unmount.</p>
+    <ul>
+      <li class="fragment"><span class="good">✓</span> <strong>Debounce throttling:</strong> Only shows loading state after 100ms — avoids flicker on fast navigations</li>
+      <li class="fragment"><span class="good">✓</span> <strong>useRef for mutable tracking:</strong> <code>currentRoute</code> tracks without re-renders</li>
+      <li class="fragment"><span class="good">✓</span> <strong>Proper cleanup:</strong> Removes listeners, clears timers in the return function</li>
+      <li class="fragment"><span class="good">✓</span> <strong>Dependency array:</strong> <code>[events]</code> ensures effect re-runs if router events change</li>
+      <li class="fragment"><span class="good">✓</span> <strong>useState for render-triggering:</strong> <code>setPendingRoute</code> triggers re-render to show loading UI</li>
+    </ul>
+    <blockquote class="insight" style="font-size:0.7em">
+      💡 <strong>Rule of thumb:</strong> useRef for values that shouldn't trigger re-renders, useState for values that should.
+    </blockquote>
+  </section>
+
+  <section>
+    <h3>Hook 2: <code>useTocHighlight</code></h3>
+    <p class="small">A table of contents is only useful if it shows where you are. This hook tracks which heading is currently in view, throttled to 100ms so scroll performance stays at 60fps.</p>
+    <p>Scroll-spy for the Table of Contents sidebar</p>
+    <pre><code class="language-tsx">export function useTocHighlight() {
+  const [currentIndex, setCurrentIndex] = useState&lt;number&gt;(0);
+  const timeoutRef = useRef&lt;number | null&gt;(null);
+
+  useEffect(() => {
+    function updateActiveLink() {
+      const scrollPosition = window.scrollY + window.innerHeight;
+      const headersAnchors = getHeaderAnchors();
+
+      if (scrollPosition >= document.body.scrollHeight) {
+        setCurrentIndex(headersAnchors.length - 1);
+        return;
+      }
+
+      let index = -1;
+      while (index &lt; headersAnchors.length - 1) {
+        const { top } = headersAnchors[index + 1].getBoundingClientRect();
+        if (top >= 85) break;  // 85px offset for sticky header
+        index++;
+      }
+      setCurrentIndex(Math.max(index, 0));
+    }
+
+    // 🎯 Throttle: max one update per 100ms
+    function throttledUpdateActiveLink() {
+      if (timeoutRef.current === null) {
+        timeoutRef.current = window.setTimeout(() => {
+          timeoutRef.current = null;
+          updateActiveLink();
+        }, 100);
+      }
+    }
+
+    window.addEventListener('scroll', throttledUpdateActiveLink, {passive: true});
+    window.addEventListener('resize', throttledUpdateActiveLink);
+    // ...cleanup
+  }, []);
+  return { currentIndex };
+}</code></pre>
+  </section>
+
+  <section>
+    <h3>Hook 3: <code>useActiveSection</code> (Inline)</h3>
+    <p class="small">Sometimes the best abstraction is no abstraction at all. This function derives the active section directly from the router path without any state or effects. If it does not call hooks, it is not a hook.</p>
+    <p>Determines which site section you're in from the URL</p>
+    <pre><code class="language-tsx">function useActiveSection() {
+  const { asPath } = useRouter();
+  const cleanedPath = asPath.split(/[\?\#]/)[0];
+
+  if (cleanedPath === '/')      return 'home';
+  if (cleanedPath.startsWith('/reference')) return 'reference';
+  if (asPath.startsWith('/learn'))     return 'learn';
+  if (asPath.startsWith('/community')) return 'community';
+  if (asPath.startsWith('/blog'))      return 'blog';
+
+  return 'unknown';
+}</code></pre>
+    <ul style="font-size:0.65em">
+      <li class="fragment"><span class="good">✓</span> Simple derived state — no useEffect needed!</li>
+      <li class="fragment"><span class="warn">⚠</span> Note: this isn't actually a hook (no "use" prefix pattern usage), it just calls <code>useRouter()</code></li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Custom Hook Design Rules (from this codebase)</h3>
+    <ol>
+      <li class="fragment"><strong>Name starts with "use":</strong> <code>usePendingRoute</code>, <code>useTocHighlight</code></li>
+      <li class="fragment"><strong>Return minimal API:</strong> <code>usePendingRoute</code> returns just a string | null, not an object</li>
+      <li class="fragment"><strong>Clean up in useEffect returns:</strong> timers, listeners, subscriptions</li>
+      <li class="fragment"><strong>Use useRef for non-render values:</strong> timer IDs, previous values, DOM refs</li>
+      <li class="fragment"><strong>Use useState only for render-triggering values:</strong> loading states, indices, toggles</li>
+      <li class="fragment"><strong>Throttle expensive work:</strong> scroll handlers, resize handlers → setTimeout gate</li>
+      <li class="fragment"><strong>Debounce user feedback:</strong> 100ms delay before showing loading → avoids flicker</li>
+    </ol>
+  </section>
+</section>
+
+<!-- ==================== REACT CONTEXT ==================== -->
+<section>
+  <section>
+    <h2><i class="ph ph-package"></i> React Context</h2>
+    <p>Prop drilling is dead — long live Context</p>
+  </section>
+
+  <section>
+    <h3>How This Codebase Uses Context</h3>
+    <p class="small">Context is not a state manager; it is a dependency injector. React.dev uses it sparingly, placing providers close to consumers rather than at the root, which minimizes re-render blast radius.</p>
+    <table style="font-size:0.65em; margin:auto;">
+      <tr>
+        <th style="color:#58c4dc">Context</th>
+        <th style="color:#58c4dc">Purpose</th>
+        <th style="color:#58c4dc">Pattern</th>
+      </tr>
+      <tr>
+        <td><code>TocContext</code></td>
+        <td>Table of Contents data</td>
+        <td>Pass data down to MDX components (InlineToc, etc.)</td>
+      </tr>
+      <tr>
+        <td><code>LanguagesContext</code></td>
+        <td>Available translations</td>
+        <td>Language picker in MDX content</td>
+      </tr>
+      <tr>
+        <td><code>ErrorDecoderContext</code></td>
+        <td>Error message + code</td>
+        <td><strong>Sentinel pattern:</strong> throw if used outside expected page</td>
+      </tr>
+      <tr>
+        <td><code>IllustrationContext</code></td>
+        <td>Is inside an IllustrationBlock?</td>
+        <td><strong>Boolean flag:</strong> changes behavior of nested components</td>
+      </tr>
+    </table>
+  </section>
+
+  <section>
+    <h3>Context Pattern 1: Basic Data Passing</h3>
+    <p class="small">The simplest use of Context is passing data down without prop drilling. Here, TOC data and available translations are provided at the layout level so any MDX component can read them.</p>
+    <pre><code class="language-tsx">// 1. Define the context with a default value
+export const TocContext = createContext&lt;Toc&gt;([]);
+
+// 2. Provide it at the layout level
+&lt;TocContext value={toc}&gt;
+  &lt;LanguagesContext value={languages}&gt;
+    {children}  {/* All MDX components can now use these */}
+  &lt;/LanguagesContext&gt;
+&lt;/TocContext&gt;
+
+// 3. Consume it deep in the tree
+function InlineToc() {
+  const toc = useContext(TocContext);
+  // Use toc data to build inline navigation
+}</code></pre>
+    <p class="small"><span class="good">✓</span> Context providers are placed <em>close</em> to where the data is needed, not at the root</p>
+  </section>
+
+  <section>
+    <h3>Context Pattern 2: The Sentinel Pattern</h3>
+    <p class="small">A unique Symbol as the default value makes it impossible to accidentally match real data. The custom hook then validates usage and throws a clear error if the component is rendered outside its expected parent.</p>
+    <pre><code class="language-tsx">// 🔒 Type-safe guard against misuse
+const notInErrorDecoderContext = Symbol('not in error decoder context');
+
+export const ErrorDecoderContext = createContext&lt;
+  { errorMessage: string | null; errorCode: string | null }
+  | typeof notInErrorDecoderContext  // &lt;— Sentinel default!
+&gt;(notInErrorDecoderContext);
+
+// Custom hook with built-in validation
+export const useErrorDecoderParams = () => {
+  const params = useContext(ErrorDecoderContext);
+
+  if (params === notInErrorDecoderContext) {
+    throw new Error(
+      'useErrorDecoder must be used in error decoder pages only'
+    );
+  }
+  return params; // TypeScript now knows it's the real type!
+};</code></pre>
+    <ul style="font-size:0.65em">
+      <li class="fragment"><span class="good">✓</span> Uses a <strong>unique Symbol</strong> as default — can never collide with real data</li>
+      <li class="fragment"><span class="good">✓</span> The custom hook validates context exists and throws a clear error if missing</li>
+      <li class="fragment"><span class="good">✓</span> TypeScript narrows the type after the guard check</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>Context Pattern 3: Boolean Behavior Flag</h3>
+    <p class="small">Context can change child behavior without passing props through every layer. Here, an <code>isInBlock</code> flag suppresses author credits for illustrations nested inside a grouped block.</p>
+    <pre><code class="language-tsx">// IllustrationContext controls whether child Illustrations
+// show their author credit (don't show it inside a block)
+const IllustrationContext = React.createContext&lt;{isInBlock?: boolean}&gt;({
+  isInBlock: false,
+});
+
+function IllustrationBlock({ children }) {
+  return (
+    // Wrap children so they know they're inside a block
+    &lt;IllustrationContext value={{ isInBlock: true }}&gt;
+      {children}
+    &lt;/IllustrationContext&gt;
+  );
+}
+
+function Illustration({ caption, src, alt, author }) {
+  const { isInBlock } = useContext(IllustrationContext);
+  return (
+    &lt;figure&gt;
+      &lt;img src={src} alt={alt} /&gt;
+      {/* Only show author credit if NOT inside a block */}
+      {!isInBlock && &lt;AuthorCredit author={author} /&gt;}
+    &lt;/figure&gt;
+  );
+}</code></pre>
+    <p class="small"><span class="good">✓</span> Elegant way for parent components to change child behavior without prop drilling</p>
+  </section>
+</section>
+
+<!-- ==================== MDX + REACT ==================== -->
+<section>
+  <section>
+    <h2><i class="ph ph-note-pencil"></i> MDX + React</h2>
+    <p>Content as Components — the heart of react.dev</p>
+  </section>
+
+  <section>
+    <h3>What is MDX?</h3>
+    <p class="small">MDX lets authors write JSX inside Markdown. For a documentation site, this means interactive sandboxes, callout boxes, and diagrams live right inside the content files without touching React code.</p>
+    <p>Markdown + JSX = <strong>components in your markdown</strong></p>
+    <pre><code class="language-markdown"># Rendering Lists
+
+You can render lists from arrays like this:
+
+&lt;Sandpack&gt;
+```js App.js
+const people = ['Creola', 'Mario', 'Mohammad'];
+export default function List() {
+  return (
+    &lt;ul&gt;
+      {people.map(p => &lt;li key={p}&gt;{p}&lt;/li&gt;)}
+    &lt;/ul&gt;
+  );
+}
+```
+&lt;/Sandpack&gt;
+
+&lt;Note&gt;Keys must be unique among siblings.&lt;/Note&gt;</code></pre>
+    <p class="small">The <code>&lt;Sandpack&gt;</code> and <code>&lt;Note&gt;</code> are real React components!</p>
+  </section>
+
+  <section>
+    <h3>The MDX Compilation Pipeline</h3>
+    <p class="small">At build time, every markdown file goes through a multi-stage pipeline. The result is a JSON-serialized React tree that the client revives into real components without re-parsing MDX in the browser.</p>
+    <pre><code class="language-text">.md file
+    │
+    ▼
+1. Add fake imports for every MDX component name
+   ("import CodeBlock from 'CodeBlock'" etc.)
+    │
+    ▼
+2. @mdx-js/mdx → Compile to JSX
+    │
+    ▼
+3. Babel transform → CommonJS JavaScript
+    │
+    ▼
+4. eval() the JS code → Get React element tree
+   (<i class="ph ph-warning"></i> BUILD TIME ONLY — never eval user content!)
+    │
+    ▼
+5. prepareMDX() — Extract TOC, wrap in MaxWidth containers
+    │
+    ▼
+6. JSON.stringify() — Serialize React tree to JSON for client
+    │
+    ▼
+7. Cache to disk (metro-cache)
+    │
+    ▼
+8. Client: JSON.parse() → reviveNodeOnClient()
+   String component names → Real React components</code></pre>
+  </section>
+
+  <section>
+    <h3>The MDXComponents Map — 50+ Custom Components!</h3>
+    <pre><code class="language-tsx">export const MDXComponents = {
+  // Override standard HTML elements
+  p: P, strong: Strong, blockquote: Blockquote,
+  ol: OL, ul: UL, li: LI,
+  h1: H1, h2: H2, h3: H3, h4: H4, h5: H5,
+  a: Link, img: Image, code: InlineCode, pre: CodeBlock,
+
+  // Custom MDX-only components
+  Sandpack, SandpackRSC,     // Interactive code playgrounds
+  Note, Pitfall, Canary, Wip, Deprecated,  // Callout boxes
+  Challenges, Hint, Solution,             // Interactive exercises
+  Diagram, DiagramGroup,                  // SVG diagrams
+  CodeDiagram, CodeStep,                  // Annotated code
+  ConsoleBlock, TerminalBlock,            // Terminal output
+  YouWillLearn, Recap, Intro,            // Learning structure
+  InlineToc,                              // Auto-generated TOC
+  DeepDive,                               // Expandable sections
+  YouTubeIframe,                          // Video embeds
+  PackageImport,                          // npm install snippets
+  TeamMember,                             // Author profiles
+  // ...and more!
+};</code></pre>
+  </section>
+
+  <section>
+    <h3>Key MDX Pattern: Serialization & Revival</h3>
+    <pre><code class="language-js">// SERVER: Serialize React elements to JSON
+function stringifyNodeOnServer(key, val) {
+  if (val?.$$typeof === Symbol.for('react.transitional.element')) {
+    const { mdxType, originalType, parentName, ...cleanProps } = val.props;
+    return ['$r', typeof val.type === 'string' ? val.type : mdxType, val.key, cleanProps];
+  }
+  return val;
+}
+
+// CLIENT: Revive JSON back to React elements
+function reviveNodeOnClient(parentPropertyName, val) {
+  if (Array.isArray(val) && val[0] === '$r') {
+    let Type = val[1];      // Component name as string
+    let key = val[2];       // React key
+    let props = val[3];     // Cleaned props
+
+    if (Type === 'wrapper') {
+      Type = Fragment;
+    }
+    if (Type in MDXComponents) {
+      Type = MDXComponents[Type];  // String → Real component!
+    }
+    return &lt;Type key={key} {...props} /&gt;;
+  }
+  return val;
+}</code></pre>
+    <p class="small"><span class="good">✓</span> This is a <em>custom</em> SSG pipeline — predates React Server Components</p>
+  </section>
+
+  <section>
+    <h3>Heading Components with Auto-Anchors</h3>
+    <pre><code class="language-tsx">const Heading = forwardRefWithAs&lt;HeadingProps, 'div'&gt;(
+  function Heading({ as: Comp = 'div', children, id, isPageAnchor = true, ...props }, ref) {
+    let label = typeof children === 'string'
+      ? 'Link for ' + children
+      : 'Link for this heading';
+
+    return (
+      &lt;Comp id={id} ref={ref} className="mdx-heading" {...props}&gt;
+        {children}
+        {isPageAnchor && (
+          &lt;a href={`#${id}`} aria-label={label} className="mdx-header-anchor"&gt;
+            {/* SVG link icon */}
+          &lt;/a&gt;
+        )}
+      &lt;/Comp&gt;
+    );
+  }
+);
+
+// Then pre-configured variants:
+export const H1 = (props) =&gt; &lt;Heading as="h1" className="text-5xl font-bold" {...props} /&gt;;
+export const H2 = (props) =&gt; &lt;Heading as="h2" className="text-3xl font-bold my-6" {...props} /&gt;;
+export const H3 = (props) =&gt; &lt;Heading as="h3" className="text-2xl font-bold my-6" {...props} /&gt;;</code></pre>
+  </section>
+</section>
+
+<!-- ==================== PERFORMANCE ==================== -->
+<section>
+  <section>
+    <h2><i class="ph ph-lightning"></i> Performance Patterns</h2>
+    <p>Real-world optimization techniques</p>
+  </section>
+
+  <section>
+    <h3>1. <code>React.lazy()</code> + Dynamic Imports</h3>
+    <p class="small">Not every component needs to be in the initial bundle. The search modal and code playgrounds are split into separate chunks and loaded only when the user actually needs them.</p>
+    <pre><code class="language-tsx">// Search.tsx — Lazy load the heavy DocSearch modal
+const DocSearchModal: any = lazy(() =>
+  import('@docsearch/react/modal').then((mod) => ({
+    default: mod.DocSearchModal,
+  }))
+);
+
+// Only loaded when user opens search (Cmd+K)</code></pre>
+    <pre><code class="language-tsx">// Page.tsx — Prefetch the CodeBlock component
+import(/* webpackPrefetch: true */ '../MDX/CodeBlock/CodeBlock');
+
+// Browser downloads CodeBlock during idle time,
+// so it's ready when user scrolls to a code example</code></pre>
+    <ul style="font-size:0.65em">
+      <li class="fragment"><span class="good">✓</span> <code>lazy()</code> defers loading until component renders</li>
+      <li class="fragment"><span class="good">✓</span> <code>webpackPrefetch</code> downloads during browser idle time</li>
+      <li class="fragment"><span class="good">✓</span> Different strategies for different priorities</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>2. <code>React.memo()</code> with Custom Comparator</h3>
+    <p class="small">Memoization is not free. React.dev only uses <code>memo</code> when a component receives large objects and only needs to re-render on specific field changes, such as the current page path.</p>
+    <pre><code class="language-tsx">// DocsFooter.tsx — Only re-render if the route actually changed
+function areEqual(prevProps, props) {
+  return prevProps.route?.path === props.route?.path;
+}
+
+export const DocsPageFooter = memo(
+  function DocsPageFooter({ nextRoute, prevRoute, route }) {
+    // This component only re-renders when the page path changes,
+    // not when the entire route object reference changes
+    return (/* Previous/Next navigation links */);
+  },
+  areEqual  // Custom comparison function!
+);</code></pre>
+    <ul style="font-size:0.65em">
+      <li class="fragment"><span class="good">✓</span> <code>memo()</code> skips re-render when props are shallow-equal</li>
+      <li class="fragment"><span class="good">✓</span> Custom comparator for fine-grained control</li>
+      <li class="fragment"><span class="warn">⚠</span> Only use when you've measured a performance issue</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>3. <code>startTransition</code> — Mark Updates as Non-Urgent</h3>
+    <pre><code class="language-tsx">// TopNav.tsx — Opening search is not urgent
+import { startTransition } from 'react';
+
+const onOpenSearch = useCallback(() => {
+  startTransition(() => {
+    setShowSearch(true); // React can defer this if user is typing
+  });
+}, []);</code></pre>
+    <blockquote class="insight" style="font-size:0.7em">
+      💡 <strong>Why?</strong> If the user opens search while React is rendering something else, <code>startTransition</code> tells React "this can wait." The UI stays responsive.
+    </blockquote>
+  </section>
+
+  <section>
+    <h3>4. <code>useMemo</code> — Cache Expensive Computations</h3>
+    <pre><code class="language-tsx">// [[...markdownPath]].js — Only re-parse JSON when content string changes
+const parsedContent = useMemo(
+  () => JSON.parse(content, reviveNodeOnClient),
+  [content]
+);
+const parsedToc = useMemo(
+  () => JSON.parse(toc, reviveNodeOnClient),
+  [toc]
+);</code></pre>
+    <pre><code class="language-tsx">// MDXComponents.tsx — Memoize nested TOC calculation
+function InlineToc() {
+  const toc = useContext(TocContext);
+  const root = useMemo(() => calculateNestedToc(toc), [toc]);
+  if (root.children.length &lt; 2) return null;
+  return &lt;InlineTocItem items={root.children} /&gt;;
+}</code></pre>
+    <ul style="font-size:0.65em">
+      <li class="fragment"><span class="good">✓</span> Use for expensive computations that depend on stable inputs</li>
+      <li class="fragment"><span class="warn">⚠</span> Don't wrap <em>everything</em> — useMemo has its own cost</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>5. <code>Suspense</code> — Graceful Loading States</h3>
+    <pre><code class="language-tsx">// Page.tsx
+&lt;Suspense fallback={null}&gt;
+  &lt;main&gt;
+    &lt;TocContext value={toc}&gt;...&lt;/TocContext&gt;
+  &lt;/main&gt;
+&lt;/Suspense&gt;
+
+// TopNav.tsx
+&lt;Suspense fallback={null}&gt;
+  &lt;SidebarRouteTree ... /&gt;
+&lt;/Suspense&gt;</code></pre>
+    <ul style="font-size:0.65em">
+      <li class="fragment"><span class="good">✓</span> <code>fallback={null}</code> means "show nothing while loading" (not a spinner)</li>
+      <li class="fragment"><span class="good">✓</span> Avoids layout shift for fast-loading content</li>
+      <li class="fragment"><span class="warn">⚠</span> The comment says: "No fallback UI so need to be careful not to suspend directly inside"</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>6. <code>IntersectionObserver</code> — Scroll Detection</h3>
+    <pre><code class="language-tsx">// TopNav.tsx — Detect when nav should get shadow
+useEffect(() => {
+  const observer = new IntersectionObserver(
+    (entries) => {
+      entries.forEach((entry) => {
+        setIsScrolled(!entry.isIntersecting);
+      });
+    },
+    { root: null, rootMargin: '0px', threshold: 0 }
+  );
+
+  observer.observe(scrollDetectorRef.current!);
+  return () => observer.disconnect();
+}, []);
+
+// In JSX: &lt;div ref={scrollDetectorRef} /&gt;  (0px sentinel at top)</code></pre>
+    <p class="small"><span class="good">✓</span> Far more performant than <code>scroll</code> event listeners!</p>
+  </section>
+
+  <section>
+    <h3>7. <code>body-scroll-lock</code> — Prevent Background Scroll</h3>
+    <pre><code class="language-tsx">// When mobile menu opens, lock body scroll
+useEffect(() => {
+  if (isMenuOpen) {
+    const scrollParent = scrollParentRef.current!;
+    disableBodyScroll(scrollParent);
+    return () => enableBodyScroll(scrollParent);
+  }
+}, [isMenuOpen]);</code></pre>
+    <p class="small"><span class="good">✓</span> Critical for mobile UX — prevents the page behind the modal from scrolling</p>
+  </section>
+
+  <section>
+    <h3>8. <code>react-collapsed</code> — Animated Collapse</h3>
+    <pre><code class="language-tsx">// SidebarRouteTree.tsx — Smooth expand/collapse animation
+const { getCollapseProps } = useCollapse({ isExpanded, duration });
+
+return (
+  &lt;div {...getCollapseProps()}&gt;
+    {/* Nested sidebar items animate their height */}
+  &lt;/div&gt;
+);</code></pre>
+    <p class="small"><span class="good">✓</span> Uses FLIP animations — no manual height calculations needed</p>
+  </section>
+</section>
+
+<!-- ==================== TYPE PATTERNS ==================== -->
+<section>
+  <section>
+    <h2><i class="ph ph-ruler"></i> TypeScript Patterns</h2>
+    <p>Advanced types from production code</p>
+  </section>
+
+  <section>
+    <h3>1. Discriminated Unions for Variants</h3>
+    <p class="small">A union of string literals turns runtime values into compile-time contracts. If you add a new variant, TypeScript forces you to update every map, switch, and lookup object that consumes it.</p>
+    <pre><code class="language-tsx">type CalloutVariants =
+  | 'deprecated'
+  | 'pitfall'
+  | 'note'
+  | 'wip'
+  | 'canary'
+  | 'experimental'
+  | 'rc'
+  | 'major'
+  | 'rsc';
+
+// TypeScript enforces that variantMap covers ALL variants
+const variantMap: Record&lt;CalloutVariants, VariantConfig&gt; = { ... };</code></pre>
+    <p class="small"><span class="good">✓</span> If you add a variant to the union, TypeScript forces you to add it to the map</p>
+  </section>
+
+  <section>
+    <h3>2. Generic Polymorphic Component Types</h3>
+    <pre><code class="language-tsx">// Advanced: "as" prop pattern with full type inference
+export type As&lt;BaseProps = any&gt; = React.ElementType&lt;BaseProps&gt;;
+
+export type PropsWithAs&lt;ComponentType extends As, ComponentProps&gt; =
+  ComponentProps &
+  Omit&lt;
+    React.ComponentPropsWithRef&lt;ComponentType&gt;,
+    'as' | keyof ComponentProps
+  &gt; & {
+    as?: ComponentType;
+  };</code></pre>
+    <p class="small"><span class="good">✓</span> This is what allows <code>&lt;Heading as="h1"&gt;</code> to infer all h1-specific props</p>
+  </section>
+
+  <section>
+    <h3>3. Symbol-Based Sentinel Types</h3>
+    <p class="small">A Symbol cannot be forged by user data, making it the perfect sentinel for Context defaults. After a guard check, TypeScript narrows the type so you never have to deal with the sentinel again.</p>
+    <pre><code class="language-tsx">// Create a unique, unforgeable default value
+const notInErrorDecoderContext = Symbol('not in error decoder context');
+
+// The context type includes the sentinel
+export const ErrorDecoderContext = createContext&lt;
+  { errorMessage: string | null; errorCode: string | null }
+  | typeof notInErrorDecoderContext  // &lt;— TypeScript narrows after guard
+&gt;(notInErrorDecoderContext);</code></pre>
+    <p class="small"><span class="good">✓</span> TypeScript's type narrowing works perfectly with this pattern</p>
+  </section>
+
+  <section>
+    <h3>4. Route Tree as Recursive Type</h3>
+    <pre><code class="language-tsx">export interface RouteItem {
+  title: string;
+  version?: 'canary' | 'major';
+  description?: string;
+  tags?: RouteTag[];
+  path?: string;            // URL path
+  heading?: boolean;        // Is this just a section header?
+  routes?: RouteItem[];     // 🔄 RECURSIVE! A tree structure
+  hasSectionHeader?: boolean;
+  sectionHeader?: string;
+  skipBreadcrumb?: boolean;
+}</code></pre>
+    <p class="small"><span class="good">✓</span> Self-referential types for tree structures — sidebar and breadcrumbs both use this</p>
+  </section>
+
+  <section>
+    <h3>5. TypeScript + Tailwind: <code>classnames</code> Library</h3>
+    <pre><code class="language-tsx">import cn from 'classnames';
+
+// Conditional classes made easy
+&lt;div className={cn(
+  'text-base leading-tight font-bold rounded-full',     // Always
+  { 'bg-link text-white': active },                     // Conditional
+  { 'bg-transparent text-primary': !active },           // Conditional
+  className                                              // From props
+)} /&gt;</code></pre>
+    <p class="small"><span class="good">✓</span> <code>classnames</code> (aliased as <code>cn</code>) is the standard approach in this codebase — used in nearly every component</p>
+  </section>
+</section>
+
+<!-- ==================== STATE MANAGEMENT ==================== -->
+<section>
+  <section>
+    <h2><i class="ph ph-archive"></i> State Management</h2>
+    <p>No Redux, no Zustand — just React</p>
+  </section>
+
+  <section>
+    <h3>The Philosophy: React Built-ins Only</h3>
+    <p class="small">A documentation site does not need Redux, Zustand, or MobX. The URL is the single source of truth; everything else is derived from it via props, Context, and simple computation.</p>
+    <ul>
+      <li class="fragment"><span class="good">✓</span> <strong>No external state library</strong> — Redux, Zustand, MobX, etc. are absent</li>
+      <li class="fragment"><span class="good">✓</span> <strong>useState</strong> for local component state</li>
+      <li class="fragment"><span class="good">✓</span> <strong>useReducer</strong> — not used (state isn't complex enough!)</li>
+      <li class="fragment"><span class="good">✓</span> <strong>Context</strong> for shared data (TOC, languages, error decoder)</li>
+      <li class="fragment"><span class="good">✓</span> <strong>URL as state</strong> — the router IS the state manager for navigation</li>
+      <li class="fragment"><span class="good">✓</span> <strong>Derived state</strong> — compute from props/URL instead of storing separately</li>
+    </ul>
+    <blockquote class="insight" style="font-size:0.7em">
+      💡 <strong>Key insight:</strong> A documentation site doesn't need complex client state. The URL is the single source of truth, and everything else is derived from it.
+    </blockquote>
+  </section>
+
+  <section>
+    <h3>State Lifting Pattern</h3>
+    <p class="small">When multiple children need to share state, lift it to their closest common ancestor. The Challenges component owns the index and passes callbacks down so children can request changes without knowing about each other.</p>
+    <pre><code class="language-tsx">// Challenges.tsx — State lives at the top, passes down via props
+export function Challenges({ children, isRecipes }) {
+  const [currentChallengeIndex, setCurrentChallengeIndex] = useState(0);
+
+  const handleClickNextChallenge = () => {
+    setCurrentChallengeIndex(i => i + 1);
+  };
+
+  return (
+    &lt;Challenge
+      currentChallenge={challenges[currentChallengeIndex]}
+      hasNextChallenge={currentChallengeIndex &lt; challenges.length - 1}
+      handleClickNextChallenge={handleClickNextChallenge}
+      totalChallenges={challenges.length}
+    /&gt;
+  );
+}</code></pre>
+    <p class="small"><span class="good">✓</span> State at the top, data flows down, events flow up — the classic React way</p>
+  </section>
+
+  <section>
+    <h3>URL as State</h3>
+    <pre><code class="language-tsx">// The router IS the state manager
+const { asPath } = useRouter();
+
+// Everything derives from the URL:
+const section = useActiveSection();           // 'learn' | 'reference' | ...
+const { route, prevRoute, nextRoute } =        // Current page metadata
+  getRouteMeta(cleanedPath, routeTree);
+const breadcrumbs = getBreadcrumbs(path, routeTree);  // Navigation trail</code></pre>
+    <p class="small"><span class="good">✓</span> URL-driven state means: shareable, bookmarkable, no stale state</p>
+  </section>
+</section>
+
+<!-- ==================== RECURSIVE COMPONENTS ==================== -->
+<section>
+  <section>
+    <h2><i class="ph ph-tree-structure"></i> Recursive Components</h2>
+    <p>Rendering tree structures elegantly</p>
+  </section>
+
+  <section>
+    <h3>SidebarRouteTree — A Recursive Sidebar</h3>
+    <p class="small">Tree-shaped data demands tree-shaped rendering. The sidebar renders itself recursively for every nested route group, with a clear base case for leaf nodes and collapsible wrappers for branches.</p>
+    <pre><code class="language-tsx">export function SidebarRouteTree({ routeTree, level = 0, ... }) {
+  const currentRoutes = routeTree.routes as RouteItem[];
+
+  return (
+    &lt;ul&gt;
+      {currentRoutes.map(({ path, title, routes, heading }) =&gt; {
+        if (!path || heading) {
+          // 🔄 RECURSIVE: No path = section header, recurse into children
+          return &lt;SidebarRouteTree
+            level={level + 1}
+            routeTree={{ title, routes }}
+            ...
+          /&gt;;
+        }
+
+        if (routes) {
+          // 🔄 RECURSIVE: Has children = expandable item
+          return (
+            &lt;li&gt;
+              &lt;SidebarLink href={path} title={title} /&gt;
+              &lt;CollapseWrapper isExpanded={isExpanded}&gt;
+                &lt;SidebarRouteTree
+                  level={level + 1}
+                  routeTree={{ title, routes }}
+                  ...
+                /&gt;
+              &lt;/CollapseWrapper&gt;
+            &lt;/li&gt;
+          );
+        }
+
+        // Base case: leaf node with no children
+        return (
+          &lt;li&gt;
+            &lt;SidebarLink href={path} title={title} /&gt;
+          &lt;/li&gt;
+        );
+      })}
+    &lt;/ul&gt;
+  );
+}</code></pre>
+  </section>
+
+  <section>
+    <h3>InlineTocItem — Recursive Table of Contents</h3>
+    <pre><code class="language-tsx">function InlineTocItem({ items }: { items: Array&lt;NestedTocNode&gt; }) {
+  return (
+    &lt;UL&gt;
+      {items.map((node) =&gt; (
+        &lt;LI key={node.item.url}&gt;
+          &lt;Link href={node.item.url}&gt;{node.item.text}&lt;/Link&gt;
+          {/* 🔄 RECURSE: Nested headings get nested lists */}
+          {node.children.length &gt; 0 && (
+            &lt;InlineTocItem items={node.children} /&gt;
+          )}
+        &lt;/LI&gt;
+      ))}
+    &lt;/UL&gt;
+  );
+}</code></pre>
+  </section>
+
+  <section>
+    <h3>getBreadcrumbs — Recursive Tree Traversal</h3>
+    <pre><code class="language-tsx">// Depth-first search through a tree of routes
+function getBreadcrumbs(
+  path: string,
+  currentRoute: RouteItem,
+  breadcrumbs: RouteItem[] = []
+): RouteItem[] {
+  // <i class="ph ph-check-circle"></i> Base case: found the matching route
+  if (currentRoute.path === path) {
+    return breadcrumbs;
+  }
+
+  if (!currentRoute.routes) {
+    return [];  // Dead end
+  }
+
+  // 🔄 RECURSE: Search through children
+  for (const route of currentRoute.routes) {
+    const childRoute = getBreadcrumbs(path, route, [
+      ...breadcrumbs,
+      currentRoute,   // Add current to the trail
+    ]);
+    if (childRoute?.length) {
+      return childRoute;
+    }
+  }
+
+  return [];  // Not found in this branch
+}</code></pre>
+  </section>
+</section>
+
+<!-- ==================== SANDPACK ==================== -->
+<section>
+  <section>
+    <h2><i class="ph ph-magic-wand"></i> Sandpack Integration</h2>
+    <p>Live, editable code examples</p>
+  </section>
+
+  <section>
+    <h3>SandpackRoot — Provider + File Map Pattern</h3>
+    <p class="small">Every interactive code example on react.dev is a Sandpack instance. The root component inspects its children to build a file map, injects default styles, and configures lazy initialization so sandboxes only spin up when scrolled into view.</p>
+    <pre><code class="language-tsx">function SandpackRoot({ children, autorun = true }) {
+  // <i class="ph ph-package"></i> Extract code snippets from children using React.Children API
+  const codeSnippets = Children.toArray(children) as React.ReactElement[];
+  const files = createFileMap(codeSnippets);
+
+  // 🔧 Add default CSS to every sandbox
+  files['/src/styles.css'] = {
+    code: [sandboxStyle, files['/src/styles.css']?.code ?? ''].join('\n\n'),
+    hidden: !files['/src/styles.css']?.visible,
+  };
+
+  return (
+    &lt;SandpackProvider
+      files={{ ...template, ...files }}
+      theme={CustomTheme}
+      customSetup={{ environment: 'create-react-app' }}
+      options={{
+        autorun,
+        initMode: 'user-visible',       // Lazy init!
+        initModeObserverOptions: { rootMargin: '1400px 0px' },
+      }}&gt;
+      &lt;CustomPreset providedFiles={Object.keys(files)} /&gt;
+    &lt;/SandpackProvider&gt;
+  );
+}</code></pre>
+  </section>
+
+  <section>
+    <h3>Key Sandpack Patterns</h3>
+    <ul>
+      <li class="fragment"><span class="good">✓</span> <strong>React.Children API:</strong> Inspects children to extract file definitions</li>
+      <li class="fragment"><span class="good">✓</span> <strong>Lazy initialization:</strong> <code>initMode: 'user-visible'</code> — sandbox only loads when scrolled into view</li>
+      <li class="fragment"><span class="good">✓</span> <strong>Custom theme:</strong> Dark mode aware sandpack theme</li>
+      <li class="fragment"><span class="good">✓</span> <strong>Custom ESLint:</strong> Built-in linting for sandbox code (<code>useSandpackLint</code>)</li>
+      <li class="fragment"><span class="good">✓</span> <strong>RSC support:</strong> <code>SandpackRSC</code> variant for React Server Component examples</li>
+      <li class="fragment"><span class="good">✓</span> <strong>File bridge:</strong> Custom RSC worker for server-side sandbox execution</li>
+    </ul>
+  </section>
+</section>
+
+<!-- ==================== NEXT.JS PATTERNS ==================== -->
+<section>
+  <section>
+    <h2><i class="ph ph-gear"></i> Next.js Patterns</h2>
+    <p>Pages Router done right</p>
+  </section>
+
+  <section>
+    <h3>1. <code>_app.tsx</code> — The Root Component</h3>
+    <p class="small">The Next.js app component is the entry point for every page. React.dev uses it for one-time side effects: browser-specific scroll restoration and Google Analytics page-view tracking across route changes.</p>
+    <pre><code class="language-tsx">export default function MyApp({ Component, pageProps }: AppProps) {
+  const router = useRouter();
+
+  // Side effects that should run ONCE for the entire app:
+
+  // 1. Browser-specific scroll restoration
+  useEffect(() => {
+    const isSafari = /safari/i.test(navigator.userAgent);
+    history.scrollRestoration = isSafari ? 'auto' : 'manual';
+  }, []);
+
+  // 2. Google Analytics page view tracking
+  useEffect(() => {
+    const handleRouteChange = (url: string) => {
+      gtag('event', 'pageview', { event_label: url });
+    };
+    router.events.on('routeChangeComplete', handleRouteChange);
+    return () => router.events.off('routeChangeComplete', handleRouteChange);
+  }, [router.events]);
+
+  return &lt;Component {...pageProps} /&gt;;
+}</code></pre>
+  </section>
+
+  <section>
+    <h3>2. Next.js Router Events API</h3>
+    <pre><code class="language-tsx">// Pages Router provides events for navigation lifecycle:
+const { events } = useRouter();
+
+events.on('routeChangeStart', (url) => {
+  // Navigation started — show loading indicator
+});
+
+events.on('routeChangeComplete', (url) => {
+  // Navigation complete — hide loading, track analytics
+});
+
+events.on('routeChangeError', (err, url) => {
+  // Navigation failed — handle error
+});</code></pre>
+    <p class="small"><span class="good">✓</span> Used by <code>usePendingRoute</code> and <code>_app.tsx</code> for GA tracking</p>
+  </section>
+
+  <section>
+    <h3>3. <code>getStaticPaths</code> — Pre-generate All Pages</h3>
+    <p class="small">Static site generation means every docs page is rendered at build time. This recursive scan discovers all markdown files and returns a path object for each one, so Next.js knows exactly which HTML files to produce.</p>
+    <pre><code class="language-tsx">export async function getStaticPaths() {
+  // Recursively find ALL .md files
+  async function getFiles(dir) {
+    const subdirs = await readdir(dir);
+    const files = await Promise.all(
+      subdirs.map(async (subdir) => {
+        const res = resolve(dir, subdir);
+        return (await stat(res)).isDirectory()
+          ? getFiles(res)        // 🔄 Recursive!
+          : res.slice(rootDir.length + 1);
+      })
+    );
+    return files.flat().filter(file => file.endsWith('.md'));
+  }
+
+  const files = await getFiles(rootDir);
+  const paths = files.map(file => ({
+    params: { markdownPath: getSegments(file) },
+  }));
+
+  return { paths, fallback: false };
+  //       ↑ All pages pre-rendered at build time (SSG)
+}</code></pre>
+  </section>
+
+  <section>
+    <h3>4. <code>next.config.js</code> Key Settings</h3>
+    <pre><code class="language-js">const nextConfig = {
+  pageExtensions: ['jsx', 'js', 'ts', 'tsx', 'mdx', 'md'],
+  reactStrictMode: true,               // <i class="ph ph-magnifying-glass"></i> Double-render in dev to catch bugs
+  experimental: {
+    scrollRestoration: true,           // <i class="ph ph-mouse"></i> Restore scroll on back/forward
+    reactCompiler: true,               // <i class="ph ph-lightning"></i> React Compiler (auto-memoization!)
+  },
+  async rewrites() {
+    return {
+      beforeFiles: [
+        // Serve .md files directly (for LLM agents / raw markdown)
+        { source: '/:path*.md', destination: '/api/md/:path*' },
+      ],
+    };
+  },
+  webpack: (config) => {
+    // Custom aliases, shims, and bundle analysis
+    config.resolve.alias['use-sync-external-store/shim'] = 'react';
+    return config;
+  },
+};</code></pre>
+  </section>
+</section>
+
+<!-- ==================== REACT 19 ==================== -->
+<section>
+  <section>
+    <h2><i class="ph ph-sparkle"></i> React 19 Features Used</h2>
+    <p>Cutting-edge React in production</p>
+  </section>
+
+  <section>
+    <h3>React 19 in This Codebase</h3>
+    <p class="small">React.dev is already running React 19 in production. The experimental React Compiler auto-memoizes components, while the serialization pipeline uses the new transitional element symbol for server-client handoff.</p>
+    <ul>
+      <li class="fragment">
+        <strong>React Compiler</strong> <span class="tag">experimental</span>
+        <pre><code class="language-js">// next.config.js
+experimental: { reactCompiler: true }
+
+// Auto-memoizes components and hooks — no manual useMemo/useCallback needed!
+// Also: eslint-plugin-react-compiler checks for rules-of-react violations</code></pre>
+      </li>
+      <li class="fragment">
+        <strong>React Server Components (RSC)</strong> <span class="tag">partial</span>
+        <pre><code class="language-tsx">// SandpackRSC provides a client-side RSC simulation
+// react-server-dom-webpack is a devDependency
+// Real RSC adoption is limited — mostly demo sandboxes</code></pre>
+      </li>
+      <li class="fragment">
+        <strong><code>$$typeof: Symbol.for('react.transitional.element')</code></strong>
+        <pre><code class="language-js">// Used in the serialization pipeline
+// This is the React 19 element type symbol</code></pre>
+      </li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>React Compiler — What It Does</h3>
+    <pre><code class="language-tsx">// BEFORE React Compiler:
+function Component() {
+  const handleClick = useCallback(() => { ... }, []);
+  const items = useMemo(() => data.filter(...), [data]);
+  return &lt;MemoChild onClick={handleClick} items={items} /&gt;;
+}
+
+// WITH React Compiler:
+function Component() {
+  // The compiler automatically memoizes these!
+  const handleClick = () => { ... };
+  const items = data.filter(...);
+  return &lt;Child onClick={handleClick} items={items} /&gt;;
+}
+// <i class="ph ph-confetti"></i> Cleaner code, same performance!</code></pre>
+    <p class="small">
+      <span class="warn">⚠</span> The codebase still has manual <code>useMemo</code>/<code>memo</code> in places — the compiler is experimental, and not everything is auto-optimized yet.
+    </p>
+  </section>
+</section>
+
+<!-- ==================== ANTI-PATTERNS ==================== -->
+<section>
+  <section>
+    <h2><i class="ph ph-warning"></i> Anti-Patterns & "Hacks"</h2>
+    <p>What the codebase itself admits is problematic</p>
+  </section>
+
+  <section>
+    <h3>1. Build-Time <code>eval()</code></h3>
+    <p class="small">The MDX pipeline compiles JSX strings into executable code at build time. Because this happens on the server with trusted source files, <code>eval()</code> is acceptable here. Never use it with user-generated or CMS content.</p>
+    <pre><code class="language-js">// <i class="ph ph-warning"></i> From compileMDX.ts:
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+// THIS IS A BUILD-TIME EVAL. NEVER DO THIS WITH UNTRUSTED MDX
+// (LIKE FROM CMS)!!!
+// In this case it's okay because anyone who can edit our MDX
+// can also edit this file.
+evalJSCode(fakeRequire, fakeExports);
+// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~</code></pre>
+    <ul style="font-size:0.65em">
+      <li class="fragment"><span class="bad">✗</span> <code>eval()</code> is dangerous with untrusted input</li>
+      <li class="fragment"><span class="good">✓</span> Safe here because: build-time only, trusted content authors, not user-generated</li>
+      <li class="fragment"><span class="warn">⚠</span> The comment explicitly warns: NEVER do this with CMS content!</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>2. Serializing React Elements to JSON</h3>
+    <pre><code class="language-js">// <i class="ph ph-warning"></i> Custom serialization of React trees
+// This is what React Server Components does natively now!
+
+function stringifyNodeOnServer(key, val) {
+  if (val?.$$typeof === Symbol.for('react.transitional.element')) {
+    return ['$r', val.type, val.key, val.props];
+  }
+  return val;
+}</code></pre>
+    <ul style="font-size:0.65em">
+      <li class="fragment"><span class="warn">⚠</span> This is a custom RSC-like pipeline built before RSC existed</li>
+      <li class="fragment"><span class="warn">⚠</span> The code has a TODO: "Replace with React.cache + React.use when migrating to Next.js App Router"</li>
+      <li class="fragment"><span class="good">✓</span> Works for static content — but wouldn't work for dynamic server components</li>
+    </ul>
+  </section>
+
+  <section>
+    <h3>3. Known Hacks in the Code</h3>
+    <table style="font-size:0.6em;">
+      <tr>
+        <th style="color:#f87171">Hack</th>
+        <th style="color:#f87171">Location</th>
+        <th style="color:#facc15">Status</th>
+      </tr>
+      <tr>
+        <td><code>// HACK. Fix up the data structures instead.</code></td>
+        <td>TopNav.tsx</td>
+        <td>Mutates routeTree if only one child</td>
+      </tr>
+      <tr>
+        <td><code>// This is kind of a lie.</code></td>
+        <td>_app.tsx</td>
+        <td>Safari scroll restoration workaround</td>
+      </tr>
+      <tr>
+        <td><code>// HACK: Fix up the data structures instead.</code></td>
+        <td>TopNav.tsx</td>
+        <td>routeTree normalization hack</td>
+      </tr>
+      <tr>
+        <td><code>as any</code> type casts</td>
+        <td>Multiple files</td>
+        <td>TypeScript escape hatches (forwardRefWithAs, lazy imports)</td>
+      </tr>
+      <tr>
+        <td><code>@ts-ignore</code> / <code>@ts-expect-error</code></td>
+        <td>Multiple files</td>
+        <td>Used sparingly with explanations</td>
+      </tr>
+    </table>
+  </section>
+
+  <section>
+    <h3>What NOT to Do (General Lessons)</h3>
+    <p class="small">These anti-patterns are not theoretical. They are real mistakes the codebase actively avoids or explicitly warns against in comments. Treat them as guardrails, not suggestions.</p>
+    <ol>
+      <li class="fragment"><span class="bad">✗</span> <strong>Don't add a state library prematurely.</strong> This site has zero — useState + Context + URL is enough.</li>
+      <li class="fragment"><span class="bad">✗</span> <strong>Don't wrap everything in useMemo/useCallback.</strong> The React Compiler now handles this. Profile first.</li>
+      <li class="fragment"><span class="bad">✗</span> <strong>Don't use <code>React.FC</code>.</strong> This codebase never uses it. Plain functions with typed props are cleaner.</li>
+      <li class="fragment"><span class="bad">✗</span> <strong>Don't put Context providers at the root unnecessarily.</strong> Wrap them as close to consumers as possible.</li>
+      <li class="fragment"><span class="bad">✗</span> <strong>Don't ignore the dependency array.</strong> The eslint-plugin-react-hooks is there for a reason.</li>
+      <li class="fragment"><span class="bad">✗</span> <strong>Don't eval() user content.</strong> The codebase explicitly warns about this.</li>
+      <li class="fragment"><span class="bad">✗</span> <strong>Don't use default exports for everything.</strong> Named exports are preferred for tree-shaking.</li>
+      <li class="fragment"><span class="bad">✗</span> <strong>Don't skip cleanup in useEffect.</strong> Every effect with subscriptions/timers has a cleanup function.</li>
+    </ol>
+  </section>
+</section>
+
+<!-- ==================== BEST PRACTICES ==================== -->
+<section>
+  <section>
+    <h2><i class="ph ph-check-circle"></i> Best Practices Summary</h2>
+    <p>What to adopt from this codebase</p>
+  </section>
+
+  <section>
+    <h3>Component Design</h3>
+    <ol style="font-size:0.7em">
+      <li><strong>One component, one file.</strong> Each icon, each MDX element, each layout piece gets its own file.</li>
+      <li><strong>Barrel exports.</strong> <code>index.tsx</code> files re-export from sibling files for clean imports.</li>
+      <li><strong>Interface for props.</strong> Always typed, always at the top of the file (or imported).</li>
+      <li><strong>Variant map over if/else.</strong> Configuration objects scale better than condition chains.</li>
+      <li><strong>Composition over configuration.</strong> The <code>Page</code> component composes layout pieces rather than accepting dozens of boolean flags.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h3>State & Data Flow</h3>
+    <ol style="font-size:0.7em">
+      <li><strong>URL as the source of truth.</strong> Navigation state, active section, breadcrumbs — all derived from the URL.</li>
+      <li><strong>Context for shared document data.</strong> TOC, languages, error params — things many components need.</li>
+      <li><strong>useState for UI state.</strong> Open/closed toggles, form inputs, selected indices.</li>
+      <li><strong>useRef for mutable non-render values.</strong> Timer IDs, previous values, DOM nodes.</li>
+      <li><strong>Lift state up minimally.</strong> State lives in the closest common ancestor.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h3>Performance</h3>
+    <ol style="font-size:0.7em">
+      <li><strong>Lazy load heavy components.</strong> <code>React.lazy()</code> for search modal, code playgrounds.</li>
+      <li><strong>Prefetch likely-needed code.</strong> <code>webpackPrefetch: true</code> for CodeBlock.</li>
+      <li><strong>IntersectionObserver > scroll events.</strong> For scroll-spy, "is scrolled" detection.</li>
+      <li><strong>Throttle/debounce scroll handlers.</strong> 100ms timeout prevents jank.</li>
+      <li><strong>startTransition for non-urgent updates.</strong> Search opening, route transitions.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h3>TypeScript</h3>
+    <ol style="font-size:0.7em">
+      <li><strong>Discriminated unions for variants.</strong> TypeScript exhaustiveness checking is your friend.</li>
+      <li><strong>Symbol for sentinel values.</strong> Prevents collision with real data in Context defaults.</li>
+      <li><strong>Recursive types for trees.</strong> RouteItem, NestedTocNode — self-referencing interfaces.</li>
+      <li><strong>Generic components when needed.</strong> <code>forwardRefWithAs</code> for polymorphic components.</li>
+      <li><strong>@ts-expect-error with comments.</strong> When you must, explain why.</li>
+    </ol>
+  </section>
+
+  <section>
+    <h3>Real-World Wisdom</h3>
+    <p class="small">After studying tens of thousands of lines of production React, a few truths emerge. They are not exciting, but they are reliable.</p>
+    <ol style="font-size:0.7em">
+      <li class="fragment"><strong>You don't need a state management library</strong> until you really do. Use what React gives you first.</li>
+      <li class="fragment"><strong>The React Compiler is production-ready enough</strong> for react.dev. It simplifies code by removing manual memoization.</li>
+      <li class="fragment"><strong>Sometimes a "hack" is okay</strong> — as long as it's commented and you understand the tradeoffs.</li>
+      <li class="fragment"><strong>MDX is incredibly powerful</strong> when you provide a rich component library. Content authors get superpowers.</li>
+      <li class="fragment"><strong>Build-time compilation</strong> (SSG) is great for documentation — fast, SEO-friendly, and simple.</li>
+      <li class="fragment"><strong>Dark mode is a first-class citizen.</strong> Every component handles light and dark variants.</li>
+      <li class="fragment"><strong>Accessibility matters.</strong> aria-labels, semantic HTML, keyboard navigation everywhere.</li>
+    </ol>
+  </section>
+</section>
+
+<!-- ==================== CHEATSHEET ==================== -->
+<section>
+  <section>
+    <h2><i class="ph ph-list-dashes"></i> Quick Reference Cheatsheet</h2>
+    <p class="small">These templates are distilled directly from the react.dev source. Copy them into your own projects and adapt the naming to your team's conventions.</p>
+    <p>Patterns you can copy today</p>
+  </section>
+
+  <section>
+    <h3>Component Template</h3>
+    <pre><code class="language-tsx">import cn from 'classnames';
+import * as React from 'react';
+
+interface MyComponentProps {
+  children: React.ReactNode;
+  variant?: 'primary' | 'secondary';
+  className?: string;
+}
+
+export function MyComponent({
+  children,
+  variant = 'primary',
+  className,
+}: MyComponentProps) {
+  return (
+    &lt;div className={cn('base-classes', {
+      'bg-blue-500': variant === 'primary',
+      'bg-gray-500': variant === 'secondary',
+    }, className)}&gt;
+      {children}
+    &lt;/div&gt;
+  );
+}</code></pre>
+  </section>
+
+  <section>
+    <h3>Custom Hook Template</h3>
+    <pre><code class="language-tsx">import { useState, useRef, useEffect } from 'react';
+
+export function useMyHook(dependency: string) {
+  const [value, setValue] = useState&lt;string | null&gt;(null);
+  const timeoutRef = useRef&lt;number | null&gt;(null);
+
+  useEffect(() => {
+    // Setup
+    const handler = () => {
+      if (timeoutRef.current === null) {
+        timeoutRef.current = window.setTimeout(() => {
+          timeoutRef.current = null;
+          setValue(/* computed value */);
+        }, 100); // throttle
+      }
+    };
+
+    window.addEventListener('event', handler);
+
+    // Cleanup!
+    return () => {
+      window.removeEventListener('event', handler);
+      if (timeoutRef.current !== null) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [dependency]);
+
+  return value;  // Return minimal API
+}</code></pre>
+  </section>
+
+  <section>
+    <h3>Context Template</h3>
+    <pre><code class="language-tsx">import { createContext, useContext } from 'react';
+
+// 1. Define the type
+interface MyContextValue {
+  data: string;
+  update: (val: string) => void;
+}
+
+// 2. Create context with a sentinel default
+const missingContext = Symbol('missing');
+const MyContext = createContext&lt;MyContextValue | typeof missingContext&gt;(
+  missingContext
+);
+
+// 3. Custom hook with validation
+export function useMyContext() {
+  const ctx = useContext(MyContext);
+  if (ctx === missingContext) {
+    throw new Error('useMyContext must be used within &lt;MyProvider /&gt;');
+  }
+  return ctx;
+}
+
+// 4. Export the provider (optional, or use Context.Provider directly)
+export { MyContext };</code></pre>
+  </section>
+</section>
+
+<!-- ==================== CLOSING ==================== -->
+<section>
+  <h2><i class="ph ph-rocket-launch"></i> What's Next?</h2>
+  <p class="small">The best way to learn is to read the actual source. Start with the catch-all route and trace a single page from disk to DOM. Every pattern shown here is waiting in the codebase to be discovered.</p>
+  <div style="text-align:left; font-size:0.7em;">
+    <p><strong>To go deeper:</strong></p>
+    <ul>
+      <li>Read the actual source: <code>src/components/Layout/Page.tsx</code></li>
+      <li>Trace how one page renders: start at <code>[[...markdownPath]].js</code></li>
+      <li>Study the MDX compilation: <code>src/utils/compileMDX.ts</code></li>
+      <li>Explore Sandpack: <code>src/components/MDX/Sandpack/</code></li>
+    </ul>
+    <p style="margin-top:1em;"><strong>Key files to bookmark:</strong></p>
+    <ol>
+      <li><code>src/pages/[[...markdownPath]].js</code> — The magic catch-all route</li>
+      <li><code>src/components/MDX/MDXComponents.tsx</code> — All 50+ custom MDX components</li>
+      <li><code>src/components/Layout/Page.tsx</code> — The layout orchestrator</li>
+      <li><code>src/hooks/usePendingRoute.ts</code> — Perfect custom hook example</li>
+      <li><code>src/utils/compileMDX.ts</code> — Server-side MDX pipeline</li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <h2><i class="ph ph-confetti"></i> Happy Learning!</h2>
+  <p style="font-size:1.5em;"><i class="ph ph-anchor"></i></p>
+  <p class="small" style="color:#94a3b8;">
+    This slidedeck was generated from the actual <a href="https://github.com/reactjs/react.dev" style="color:#58c4dc">react.dev</a> source code.<br>
+    Every pattern shown here is in production, serving millions of developers.
+  </p>
+  <p class="small" style="color:#64748b;">
+    Press <kbd>Esc</kbd> for slide overview · <kbd>S</kbd> for speaker notes · <kbd>F</kbd> for fullscreen
+  </p>
+</section>
+
+</div><!-- .slides -->
+</div><!-- .reveal -->
+</div><!-- .reveal-wrap -->
+
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4/dist/reveal.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4/plugin/highlight/highlight.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/reveal.js@4/plugin/notes/notes.js"></script>
+<script>
+  /* ── Theme Toggle ──────────────────────────────── */
+  (function() {
+    const btn = document.getElementById('themeToggle');
+    const root = document.documentElement;
+    const stored = localStorage.getItem('reactdev-theme');
+    const initial = stored || 'dark';
+
+    function apply(theme) {
+      root.setAttribute('data-theme', theme);
+      btn.innerHTML = theme === 'light' ? '<i class="ph ph-sun"></i>' : '<i class="ph ph-moon"></i>';
+      localStorage.setItem('reactdev-theme', theme);
+    }
+
+    apply(initial);
+
+    btn.addEventListener('click', () => {
+      apply(root.getAttribute('data-theme') === 'light' ? 'dark' : 'light');
+    });
+  })();
+
+  /* ── Inline Sidebar ────────────────────────────── */
+  (function() {
+    const toggle = document.getElementById('navToggle');
+    const drawer = document.getElementById('navDrawer');
+    const links = drawer.querySelectorAll('a[data-slide]');
+    const folds = drawer.querySelectorAll('details');
+
+    function openNav() {
+      toggle.classList.add('active');
+      drawer.classList.add('open');
+      document.body.classList.add('sidebar-open');
+    }
+
+    function closeNav() {
+      toggle.classList.remove('active');
+      drawer.classList.remove('open');
+      document.body.classList.remove('sidebar-open');
+    }
+
+    function toggleNav() {
+      document.body.classList.contains('sidebar-open') ? closeNav() : openNav();
+    }
+
+    toggle.addEventListener('click', toggleNav);
+
+    links.forEach((link) => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const targetIdx = parseInt(link.dataset.slide, 10);
+        const slides = Reveal.getSlides();
+        const targetSlide = slides[targetIdx];
+        if (targetSlide) {
+          const indices = Reveal.getIndices(targetSlide);
+          Reveal.slide(indices.h, indices.v);
+        }
+        // keep sidebar open so slides remain usable
+      });
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'n' || e.key === 'N') {
+        if (!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)) {
+          toggleNav();
+        }
+      }
+      if (e.key === 'Escape' && document.body.classList.contains('sidebar-open')) {
+        closeNav();
+      }
+    });
+
+    // Highlight active link & auto-open its fold
+    Reveal.on('slidechanged', event => {
+      const currentSlide = event.currentSlide;
+      const slides = Reveal.getSlides();
+      const idx = slides.indexOf(currentSlide);
+      
+      let activeLink = null;
+      links.forEach(l => {
+        l.classList.remove('active');
+        if (parseInt(l.dataset.slide, 10) === idx) activeLink = l;
+      });
+      if (!activeLink) {
+        // Fallback to highest index <= idx
+        links.forEach(l => {
+          if (parseInt(l.dataset.slide, 10) <= idx) activeLink = l;
+        });
+      }
+      if (activeLink) {
+        activeLink.classList.add('active');
+        activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+        const parent = activeLink.closest('details');
+        if (parent && !parent.open) {
+          folds.forEach(f => f.open = false); // close others
+          parent.open = true;
+        }
+      }
+    });
+  })();
+
+  Reveal.initialize({
+    hash: true,
+    center: true,
+    transition: 'slide',
+    transitionSpeed: 'fast',
+    backgroundTransition: 'fade',
+    slideNumber: 'c/t',
+    progress: true,
+    controls: true,
+    controlsLayout: 'edges',
+    controlsBackArrows: 'faded',
+    overview: true,
+    embedded: true,
+    width: 1920,
+    height: 1080,
+    margin: 0.04,
+    minScale: 0.2,
+    maxScale: 2.0,
+    plugins: [RevealHighlight, RevealNotes],
+  });
+</script>
+</body>
 </html>
