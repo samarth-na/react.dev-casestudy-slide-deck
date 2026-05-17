@@ -447,6 +447,18 @@
       .nav-hint { display: inline-block; }
     }
 
+    .topic-nav-hint {
+      margin-top: 1.5em;
+      padding: 10px 20px;
+      background: var(--accent-dim);
+      border: 1px solid var(--accent-glow);
+      border-radius: 10px;
+      font-size: 0.55em;
+      color: var(--accent);
+      animation: pulse 2s ease-in-out infinite;
+      display: inline-block;
+    }
+
     /* Fragment animations */
     .reveal .fragment {
       opacity: 0;
@@ -1081,6 +1093,7 @@
   <section>
     <h2><i class="ph ph-buildings"></i> Project Architecture</h2>
     <p>How react.dev is organized</p>
+    <div class="topic-nav-hint">click on bottom arrow to read and left arrow to move to nest topic</div>
   </section>
 
   <section>
@@ -1175,6 +1188,7 @@ export async function getStaticProps(context) {
   <section>
     <h2><i class="ph ph-puzzle-piece"></i> Component Patterns</h2>
     <p>How real React components are structured</p>
+    <div class="topic-nav-hint">click on bottom arrow to read and left arrow to move to nest topic</div>
   </section>
 
   <section>
@@ -1343,6 +1357,7 @@ export { SidebarRouteTree } from './SidebarRouteTree';</code></pre>
   <section>
     <h2><i class="ph ph-anchor"></i> Custom Hooks</h2>
     <p>Extracting reusable stateful logic</p>
+    <div class="topic-nav-hint">click on bottom arrow to read and left arrow to move to nest topic</div>
   </section>
 
   <section>
@@ -1488,6 +1503,7 @@ export { SidebarRouteTree } from './SidebarRouteTree';</code></pre>
   <section>
     <h2><i class="ph ph-package"></i> React Context</h2>
     <p>Prop drilling is dead — long live Context</p>
+    <div class="topic-nav-hint">click on bottom arrow to read and left arrow to move to nest topic</div>
   </section>
 
   <section>
@@ -1609,6 +1625,7 @@ function Illustration({ caption, src, alt, author }) {
   <section>
     <h2><i class="ph ph-note-pencil"></i> MDX + React</h2>
     <p>Content as Components — the heart of react.dev</p>
+    <div class="topic-nav-hint">click on bottom arrow to read and left arrow to move to nest topic</div>
   </section>
 
   <section>
@@ -1759,6 +1776,7 @@ export const H3 = (props) =&gt; &lt;Heading as="h3" className="text-2xl font-bol
   <section>
     <h2><i class="ph ph-lightning"></i> Performance Patterns</h2>
     <p>Real-world optimization techniques</p>
+    <div class="topic-nav-hint">click on bottom arrow to read and left arrow to move to nest topic</div>
   </section>
 
   <section>
@@ -1919,6 +1937,7 @@ return (
   <section>
     <h2><i class="ph ph-ruler"></i> TypeScript Patterns</h2>
     <p>Advanced types from production code</p>
+    <div class="topic-nav-hint">click on bottom arrow to read and left arrow to move to nest topic</div>
   </section>
 
   <section>
@@ -2007,6 +2026,7 @@ export const ErrorDecoderContext = createContext&lt;
   <section>
     <h2><i class="ph ph-archive"></i> State Management</h2>
     <p>No Redux, no Zustand — just React</p>
+    <div class="topic-nav-hint">click on bottom arrow to read and left arrow to move to nest topic</div>
   </section>
 
   <section>
@@ -2067,6 +2087,7 @@ const breadcrumbs = getBreadcrumbs(path, routeTree);  // Navigation trail</code>
   <section>
     <h2><i class="ph ph-tree-structure"></i> Recursive Components</h2>
     <p>Rendering tree structures elegantly</p>
+    <div class="topic-nav-hint">click on bottom arrow to read and left arrow to move to nest topic</div>
   </section>
 
   <section>
@@ -2172,6 +2193,7 @@ function getBreadcrumbs(
   <section>
     <h2><i class="ph ph-magic-wand"></i> Sandpack Integration</h2>
     <p>Live, editable code examples</p>
+    <div class="topic-nav-hint">click on bottom arrow to read and left arrow to move to nest topic</div>
   </section>
 
   <section>
@@ -2222,6 +2244,7 @@ function getBreadcrumbs(
   <section>
     <h2><i class="ph ph-gear"></i> Next.js Patterns</h2>
     <p>Pages Router done right</p>
+    <div class="topic-nav-hint">click on bottom arrow to read and left arrow to move to nest topic</div>
   </section>
 
   <section>
@@ -2329,6 +2352,7 @@ events.on('routeChangeError', (err, url) => {
   <section>
     <h2><i class="ph ph-sparkle"></i> React 19 Features Used</h2>
     <p>Cutting-edge React in production</p>
+    <div class="topic-nav-hint">click on bottom arrow to read and left arrow to move to nest topic</div>
   </section>
 
   <section>
@@ -2385,6 +2409,7 @@ function Component() {
   <section>
     <h2><i class="ph ph-warning"></i> Anti-Patterns & "Hacks"</h2>
     <p>What the codebase itself admits is problematic</p>
+    <div class="topic-nav-hint">click on bottom arrow to read and left arrow to move to nest topic</div>
   </section>
 
   <section>
@@ -2480,6 +2505,7 @@ function stringifyNodeOnServer(key, val) {
   <section>
     <h2><i class="ph ph-check-circle"></i> Best Practices Summary</h2>
     <p>What to adopt from this codebase</p>
+    <div class="topic-nav-hint">click on bottom arrow to read and left arrow to move to nest topic</div>
   </section>
 
   <section>
@@ -2547,6 +2573,7 @@ function stringifyNodeOnServer(key, val) {
     <h2><i class="ph ph-list-dashes"></i> Quick Reference Cheatsheet</h2>
     <p class="small">These templates are distilled directly from the react.dev source. Copy them into your own projects and adapt the naming to your team's conventions.</p>
     <p>Patterns you can copy today</p>
+    <div class="topic-nav-hint">click on bottom arrow to read and left arrow to move to nest topic</div>
   </section>
 
   <section>
