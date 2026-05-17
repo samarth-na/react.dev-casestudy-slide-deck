@@ -359,62 +359,71 @@
       bottom: 2px;
     }
 
-    /* ── Mobile Controls (custom, replaces Reveal.js defaults) ───── */
+    /* ── Navigation Controls (custom, replaces Reveal.js defaults) ───── */
+    .reveal .controls {
+      display: none !important;
+    }
+
     .mobile-controls {
-      display: none;
+      display: flex;
+      position: fixed;
+      bottom: 20px;
+      left: 0;
+      right: 0;
+      justify-content: center;
+      align-items: center;
+      gap: 20px;
+      z-index: 1000;
+      pointer-events: none;
+    }
+
+    .mobile-controls button {
+      pointer-events: auto;
+      width: 60px;
+      height: 60px;
+      border-radius: 14px;
+      background: var(--surface-raised);
+      border: 1px solid var(--surface-highlight);
+      color: var(--accent);
+      font-size: 1.6rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      opacity: 0.85;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+
+    .mobile-controls button:hover {
+      opacity: 1;
+      background: var(--surface-highlight);
+      border-color: var(--accent);
+      transform: scale(1.1);
+      box-shadow: 0 0 24px var(--accent-glow), 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+
+    .mobile-controls button:active {
+      transform: scale(0.95);
+    }
+
+    .mobile-controls button:disabled {
+      opacity: 0.2;
+      pointer-events: none;
     }
 
     @media (max-width: 768px) {
-      .reveal .controls {
-        display: none !important;
+      .reveal .slides {
+        font-size: 1.8em;
+      }
+
+      .reveal-wrap {
+        padding-bottom: 100px;
+        box-sizing: border-box;
       }
 
       .mobile-controls {
-        display: flex;
-        position: fixed;
-        bottom: 80px;
-        left: 0;
-        right: 0;
-        justify-content: center;
-        align-items: center;
-        gap: 20px;
-        z-index: 1000;
-        pointer-events: none;
-      }
-
-      .mobile-controls button {
-        pointer-events: auto;
-        width: 60px;
-        height: 60px;
-        border-radius: 14px;
-        background: var(--surface-raised);
-        border: 1px solid var(--surface-highlight);
-        color: var(--accent);
-        font-size: 1.6rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        opacity: 0.85;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
-        transition: all 0.25s cubic-bezier(0.25, 1, 0.5, 1);
-      }
-
-      .mobile-controls button:hover {
-        opacity: 1;
-        background: var(--surface-highlight);
-        border-color: var(--accent);
-        transform: scale(1.1);
-        box-shadow: 0 0 24px var(--accent-glow), 0 4px 12px rgba(0, 0, 0, 0.25);
-      }
-
-      .mobile-controls button:active {
-        transform: scale(0.95);
-      }
-
-      .mobile-controls button:disabled {
-        opacity: 0.2;
-        pointer-events: none;
+        bottom: 15px;
       }
     }
 
@@ -824,10 +833,7 @@
       border-color: var(--surface-highlight);
     }
 
-    [data-theme="light"] .reveal blockquote.insight {
-      border-top-color: var(--accent);
-      background: linear-gradient(180deg, rgba(14, 165, 233, 0.05) 0%, var(--surface-raised) 100%);
-    }
+    
 
     [data-theme="light"] .reveal pre {
       background: #1e1e2e;
@@ -1137,9 +1143,7 @@
         </ol>
       </div>
     </div>
-    <blockquote class="insight" style="font-size:0.65em">
-      💡 <strong>Key insight:</strong> They compile MDX on the server, serialize the React tree to JSON, then revive it on the client. This is <em>not</em> React Server Components — it's a custom SSG pipeline!
-    </blockquote>
+    
   </section>
 
   <section>
@@ -2793,17 +2797,15 @@ export { MyContext };</code></pre>
     const buttons = container.querySelectorAll('button');
 
     function updateButtons() {
-      const idx = Reveal.getIndices();
-      const totalH = Reveal.getHorizontalSlides().length;
-      const totalV = Reveal.getVerticalSlidesByIndex(idx.h).length;
+      const routes = Reveal.availableRoutes();
 
       buttons.forEach(btn => {
         const dir = btn.dataset.dir;
         let disabled = false;
-        if (dir === 'left') disabled = idx.h === 0 && idx.v === 0;
-        if (dir === 'right') disabled = idx.h === totalH - 1 && idx.v === 0;
-        if (dir === 'up') disabled = idx.v === 0;
-        if (dir === 'down') disabled = idx.v === totalV - 1;
+        if (dir === 'left') disabled = !routes.left;
+        if (dir === 'right') disabled = !routes.right;
+        if (dir === 'up') disabled = !routes.up;
+        if (dir === 'down') disabled = !routes.down && !routes.right;
         btn.disabled = disabled;
       });
     }
@@ -2811,10 +2813,17 @@ export { MyContext };</code></pre>
     buttons.forEach(btn => {
       btn.addEventListener('click', () => {
         const dir = btn.dataset.dir;
+        const routes = Reveal.availableRoutes();
         if (dir === 'left') Reveal.left();
         if (dir === 'right') Reveal.right();
         if (dir === 'up') Reveal.up();
-        if (dir === 'down') Reveal.down();
+        if (dir === 'down') {
+          if (routes.down) {
+            Reveal.down();
+          } else if (routes.right) {
+            Reveal.next();
+          }
+        }
       });
     });
 
